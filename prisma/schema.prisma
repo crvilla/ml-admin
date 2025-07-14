@@ -3,14 +3,14 @@ generator client {
 }
 
 datasource db {
-  provider   = "postgresql"
-  url        = env("DATABASE_URL")
-  directUrl  = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Role {
-  id    String  @id @default(cuid())
-  name  String  @unique
+  id    String @id @default(cuid())
+  name  String @unique
   users User[]
 }
 
@@ -18,7 +18,7 @@ model User {
   id             String   @id @default(cuid())
   user_name      String   @unique
   email          String?  @unique
-  phone          String?  
+  phone          String?
   password       String
   changePassword Boolean  @default(true)
   roleId         String
@@ -28,23 +28,42 @@ model User {
 }
 
 enum BusinessStatus {
-  ACTIVE     // Cliente con servicio funcionando
-  PENDING    // En prueba, demo o esperando activación
-  INACTIVE   // Ya no se usa, pero no ha sido eliminado
-  BLOCKED    // Suspendido manualmente por problemas
-  SUSPENDED  // Suspendido por impago u otro automático
+  ACTIVE // Cliente con servicio funcionando
+  PENDING // En prueba, demo o esperando activación
+  INACTIVE // Ya no se usa, pero no ha sido eliminado
+  BLOCKED // Suspendido manualmente por problemas
+  SUSPENDED // Suspendido por impago u otro automático
 }
 
 model Business {
-  id              String           @id @default(cuid())
-  name            String
-  slug            String           @unique
-  status          BusinessStatus   @default(PENDING)
-  apiKeyPrivate   String           @unique
-  webhookToken    String?
-  webhookURL      String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  id             String                  @id @default(cuid())
+  name           String
+  slug           String                  @unique
+  status         BusinessStatus          @default(PENDING)
+  apiKeyPrivate  String                  @unique
+  webhookToken   String?
+  webhookURL     String?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  whatsappConfig BusinessWhatsappConfig?
 }
 
+model BusinessWhatsappConfig {
+  id         String   @id @default(cuid())
+  businessId String   @unique
+  business   Business @relation(fields: [businessId], references: [id])
 
+  wabaId            String // ID de la cuenta de WhatsApp Business
+  phoneNumberId     String // ID del número de teléfono
+  senderPhoneNumber String // Ej: +15551901575
+  environment       WSEnvironment // ENUM: DEV, TEST, PROD
+  accessToken       String // Token para enviar mensajes
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+enum WSEnvironment {
+  DEV
+  TEST
+  PROD
+}

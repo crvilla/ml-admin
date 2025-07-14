@@ -3,9 +3,9 @@ import { prisma } from '@/lib/prisma'
 
 // Obtener un business por slug
 export async function GET(
-  _req: NextRequest,
+  request: NextRequest,
   { params }: { params: { slug: string } }
-) {
+): Promise<NextResponse> {
   try {
     const business = await prisma.business.findUnique({
       where: { slug: params.slug },
@@ -31,11 +31,11 @@ export async function GET(
 
 // Actualizar webhookToken de un business por slug
 export async function PATCH(
-  req: NextRequest,
+  request: NextRequest,
   { params }: { params: { slug: string } }
-) {
+): Promise<NextResponse> {
   try {
-    const { webhookToken } = await req.json()
+    const { webhookToken } = await request.json()
 
     if (!webhookToken || typeof webhookToken !== 'string') {
       return new NextResponse('Token inválido', { status: 400 })
