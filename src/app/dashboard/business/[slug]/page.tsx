@@ -59,6 +59,7 @@ export default function BusinessDetailPage() {
         toast.error('Error al actualizar el token')
       }
     } catch (err) {
+      console.error(err)
       toast.error('Error del servidor')
     } finally {
       setSaving(false)
