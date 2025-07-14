@@ -45,7 +45,7 @@ export default async function DashboardLayout({
               <Home className="w-5 h-5 text-orange-500" />
               Inicio
             </Link>
-            <Link href="/dashboard/bussines" className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100">
+            <Link href="/dashboard/business" className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100">
               <Building2 className="w-5 h-5 text-orange-500" />
               Negocios
             </Link>

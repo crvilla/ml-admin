@@ -27,3 +27,20 @@ model User {
   updatedAt      DateTime @updatedAt
 }
 
+enum BusinessStatus {
+  ACTIVE     // Cliente con servicio funcionando
+  PENDING    // En prueba, demo o esperando activación
+  INACTIVE   // Ya no se usa, pero no ha sido eliminado
+  BLOCKED    // Suspendido manualmente por problemas
+  SUSPENDED  // Suspendido por impago u otro automático
+}
+
+model Business {
+  id            String           @id @default(cuid())
+  name          String
+  status        BusinessStatus   @default(PENDING) // enum
+  apiKeyPrivate String           @unique
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
