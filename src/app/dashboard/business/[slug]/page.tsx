@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { Input } from '@heroui/react'
-import { Button } from '@heroui/react'
 import { toast } from 'sonner'
 
 type Business = {
