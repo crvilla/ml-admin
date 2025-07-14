@@ -16,6 +16,24 @@ export async function GET() {
   }
 }
 
+async function generateUniqueSlug(name: string): Promise<string> {
+  const baseSlug = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+  let slug = baseSlug
+  let counter = 1
+
+  while (await prisma.business.findUnique({ where: { slug } })) {
+    slug = `${baseSlug}-${counter}`
+    counter++
+  }
+
+  return slug
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -25,11 +43,13 @@ export async function POST(req: NextRequest) {
       return new NextResponse('El nombre es obligatorio', { status: 400 })
     }
 
-    const apiKeyPrivate = crypto.randomBytes(32).toString('hex') // 64 chars
+    const slug = await generateUniqueSlug(name)
+    const apiKeyPrivate = crypto.randomBytes(32).toString('hex')
 
     const business = await prisma.business.create({
       data: {
         name,
+        slug,
         apiKeyPrivate,
         status: 'PENDING',
       },
@@ -41,3 +61,4 @@ export async function POST(req: NextRequest) {
     return new NextResponse('Error al crear cliente', { status: 500 })
   }
 }
+

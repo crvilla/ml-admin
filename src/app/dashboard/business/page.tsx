@@ -89,7 +89,7 @@ export default function BusinessPage() {
                   color="warning"
                   variant="solid"
                   size="sm"
-                  onClick={() => router.push(`/dashboard/business/${b.id}`)}
+                  onClick={() => router.push(`/dashboard/business/${b.slug}`)}
                   className="w-full"
                 >
                   Más info

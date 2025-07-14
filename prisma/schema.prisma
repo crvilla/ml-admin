@@ -36,11 +36,15 @@ enum BusinessStatus {
 }
 
 model Business {
-  id            String           @id @default(cuid())
-  name          String
-  status        BusinessStatus   @default(PENDING) // enum
-  apiKeyPrivate String           @unique
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  id              String           @id @default(cuid())
+  name            String
+  slug            String           @unique
+  status          BusinessStatus   @default(PENDING)
+  apiKeyPrivate   String           @unique
+  webhookToken    String?
+  webhookURL      String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
+
 
