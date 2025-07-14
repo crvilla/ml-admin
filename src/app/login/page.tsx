@@ -24,33 +24,51 @@ export default function LoginPage() {
       return
     }
 
-    // No necesitas guardar el token (está en cookie HttpOnly)
     router.push('/dashboard')
   }
 
   return (
-    <div className="max-w-sm mx-auto mt-20">
-      <h1 className="text-2xl font-bold mb-4">Iniciar sesión</h1>
-      <form onSubmit={handleLogin} className="space-y-4">
-        <input
-          type="text"
-          placeholder="Usuario"
-          value={user_name}
-          onChange={(e) => setUsername(e.target.value)}
-          className="w-full border p-2 rounded"
-        />
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full border p-2 rounded"
-        />
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        <button type="submit" className="w-full bg-black text-white p-2 rounded">
-          Entrar
-        </button>
-      </form>
+    <div className="min-h-screen flex items-center justify-center bg-white px-4">
+      <div className="max-w-md w-full space-y-6 shadow-xl rounded-2xl border p-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-orange-600">Bienvenido</h1>
+          <p className="mt-2 text-sm text-gray-600">
+            Accede al panel administrativo. Si no tienes cuenta, contacta al administrador.
+          </p>
+        </div>
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <input
+              type="text"
+              placeholder="Usuario"
+              value={user_name}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              required
+            />
+          </div>
+          <div>
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              required
+            />
+          </div>
+
+          {error && <p className="text-sm text-red-500">{error}</p>}
+
+          <button
+            type="submit"
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold transition"
+          >
+            Entrar
+          </button>
+        </form>
+      </div>
     </div>
   )
 }
