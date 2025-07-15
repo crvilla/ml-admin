@@ -2,14 +2,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+type MessageType = 'text' | 'template'
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const {
       businessId,
-      type = 'text', // 'text' o 'template'
+      type = 'text',
       message,
       templateName = 'hello_world',
+    }: {
+      businessId: string
+      type?: MessageType
+      message?: string
+      templateName?: string
+      to?: string
     } = body
 
     if (!businessId) {
@@ -24,7 +32,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No WhatsApp config found for this business' }, { status: 404 })
     }
 
-    // Usar número de prueba si está en entorno de pruebas
     let to = body.to
     if ((config.environment === 'DEV' || config.environment === 'TEST') && config.testDestinationNumber) {
       to = config.testDestinationNumber
@@ -36,28 +43,30 @@ export async function POST(req: NextRequest) {
 
     const url = `https://graph.facebook.com/v18.0/${config.phoneNumberId}/messages`
 
-    let payload: any = {
-      messaging_product: 'whatsapp',
-      to,
-    }
+    const payload =
+      type === 'template'
+        ? {
+            messaging_product: 'whatsapp',
+            to,
+            type: 'template',
+            template: {
+              name: templateName,
+              language: { code: 'en_US' },
+            },
+          }
+        : type === 'text'
+        ? {
+            messaging_product: 'whatsapp',
+            to,
+            type: 'text',
+            text: {
+              preview_url: false,
+              body: message || '',
+            },
+          }
+        : null
 
-    if (type === 'template') {
-      payload.type = 'template'
-      payload.template = {
-        name: templateName,
-        language: { code: 'en_US' },
-      }
-    } else if (type === 'text') {
-      if (!message) {
-        return NextResponse.json({ error: 'Missing message text' }, { status: 400 })
-      }
-
-      payload.type = 'text'
-      payload.text = {
-        preview_url: false,
-        body: message,
-      }
-    } else {
+    if (!payload) {
       return NextResponse.json({ error: 'Invalid message type' }, { status: 400 })
     }
 
