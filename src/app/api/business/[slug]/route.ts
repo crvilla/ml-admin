@@ -4,11 +4,15 @@ import { prisma } from '@/lib/prisma'
 // GET /api/business/[slug]
 export async function GET(
   req: NextRequest,
-  context: { params: { slug: string } }
+  { params }: { params: Record<string, string> }
 ) {
-  try {
-    const { slug } = context.params
+  const slug = params.slug
 
+  if (!slug) {
+    return NextResponse.json({ error: 'Slug requerido' }, { status: 400 })
+  }
+
+  try {
     const business = await prisma.business.findUnique({
       where: { slug },
       select: {
@@ -34,8 +38,14 @@ export async function GET(
 // PATCH /api/business/[slug]
 export async function PATCH(
   req: NextRequest,
-  context: { params: { slug: string } }
+  { params }: { params: Record<string, string> }
 ) {
+  const slug = params.slug
+
+  if (!slug) {
+    return new NextResponse('Slug requerido', { status: 400 })
+  }
+
   try {
     const { webhookToken } = await req.json()
 
@@ -44,7 +54,7 @@ export async function PATCH(
     }
 
     const updated = await prisma.business.update({
-      where: { slug: context.params.slug },
+      where: { slug },
       data: { webhookToken },
     })
 
