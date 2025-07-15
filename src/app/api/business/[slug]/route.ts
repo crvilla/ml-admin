@@ -3,11 +3,11 @@ import { prisma } from '@/lib/prisma'
 
 // GET /api/business/[slug]
 export async function GET(
-  _req: NextRequest,
-  { params }: { params: { slug: string } }
+  req: NextRequest,
+  context: { params: { slug: string } }
 ) {
   try {
-    const { slug } = params
+    const { slug } = context.params
 
     const business = await prisma.business.findUnique({
       where: { slug },
@@ -34,7 +34,7 @@ export async function GET(
 // PATCH /api/business/[slug]
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: { slug: string } }
 ) {
   try {
     const { webhookToken } = await req.json()
@@ -44,7 +44,7 @@ export async function PATCH(
     }
 
     const updated = await prisma.business.update({
-      where: { slug: params.slug },
+      where: { slug: context.params.slug },
       data: { webhookToken },
     })
 
