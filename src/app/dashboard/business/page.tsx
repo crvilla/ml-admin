@@ -16,6 +16,7 @@ type Business = {
   name: string
   status: string
   createdAt: string
+  slug: string
 }
 
 export default function BusinessPage() {

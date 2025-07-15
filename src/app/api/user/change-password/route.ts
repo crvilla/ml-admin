@@ -4,9 +4,17 @@ import bcrypt from 'bcrypt'
 import { cookies } from 'next/headers'
 import { jwtVerify, SignJWT } from 'jose'
 
+export type JWTPayloadCustom = {
+  id: string
+  user_name: string
+  role: string
+  changePassword: boolean
+}
+
 export async function POST(request: Request) {
   try {
-    const cookieStore = cookies()
+
+    const cookieStore = await cookies()
     const token = cookieStore.get('token')?.value
 
     if (!token) {
@@ -14,7 +22,7 @@ export async function POST(request: Request) {
     }
 
     const secret = new TextEncoder().encode(process.env.JWT_SECRET!)
-    const { payload } = await jwtVerify(token, secret)
+    const { payload } = await jwtVerify(token, secret) as { payload: JWTPayloadCustom }
 
     const body = await request.json()
     const { password } = body
