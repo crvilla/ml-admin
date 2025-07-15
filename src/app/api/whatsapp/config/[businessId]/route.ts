@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(_: NextRequest, { params }: { params: { businessId: string } }) {
-  const { businessId } = params
+function getBusinessIdFromUrl(req: NextRequest): string | null {
+  const url = new URL(req.url)
+  const segments = url.pathname.split('/')
+  return segments[segments.length - 1] || null
+}
+
+export async function GET(req: NextRequest) {
+  const businessId = getBusinessIdFromUrl(req)
 
   if (!businessId) {
     return NextResponse.json({ error: 'Business ID is required' }, { status: 400 })
@@ -24,8 +30,8 @@ export async function GET(_: NextRequest, { params }: { params: { businessId: st
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { businessId: string } }) {
-  const { businessId } = params
+export async function PUT(req: NextRequest) {
+  const businessId = getBusinessIdFromUrl(req)
 
   if (!businessId) {
     return NextResponse.json({ error: 'Business ID is required' }, { status: 400 })
@@ -39,7 +45,7 @@ export async function PUT(req: NextRequest, { params }: { params: { businessId: 
       senderPhoneNumber,
       accessToken,
       environment,
-      testDestinationNumber, // ← nuevo campo opcional
+      testDestinationNumber,
     } = body
 
     if (!wabaId || !phoneNumberId || !senderPhoneNumber || !accessToken || !environment) {
