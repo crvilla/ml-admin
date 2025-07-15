@@ -49,17 +49,17 @@ model Business {
 }
 
 model BusinessWhatsappConfig {
-  id         String   @id @default(cuid())
-  businessId String   @unique
-  business   Business @relation(fields: [businessId], references: [id])
-
-  wabaId            String // ID de la cuenta de WhatsApp Business
-  phoneNumberId     String // ID del número de teléfono
-  senderPhoneNumber String // Ej: +15551901575
-  environment       WSEnvironment // ENUM: DEV, TEST, PROD
-  accessToken       String // Token para enviar mensajes
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  id                    String        @id @default(cuid())
+  businessId            String        @unique
+  business              Business      @relation(fields: [businessId], references: [id])
+  wabaId                String // ID de la cuenta de WhatsApp Business
+  phoneNumberId         String // ID del número de teléfono
+  senderPhoneNumber     String // Ej: +15551901575
+  accessToken           String // Token para enviar mensajes
+  environment           WSEnvironment // ENUM: DEV, TEST, PROD
+  testDestinationNumber String? // Número a donde enviar en entorno DEV o TEST
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
 }
 
 enum WSEnvironment {
