@@ -2,11 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 // GET /api/business/[slug]
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Record<string, string> }
-) {
-  const slug = params.slug
+export async function GET(req: NextRequest) {
+  const url = new URL(req.url)
+  const segments = url.pathname.split('/')
+  const slug = segments[segments.length - 1]
 
   if (!slug) {
     return NextResponse.json({ error: 'Slug requerido' }, { status: 400 })
@@ -36,11 +35,10 @@ export async function GET(
 }
 
 // PATCH /api/business/[slug]
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Record<string, string> }
-) {
-  const slug = params.slug
+export async function PATCH(req: NextRequest) {
+  const url = new URL(req.url)
+  const segments = url.pathname.split('/')
+  const slug = segments[segments.length - 1]
 
   if (!slug) {
     return new NextResponse('Slug requerido', { status: 400 })
