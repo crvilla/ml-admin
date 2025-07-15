@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { slug: string } }
-) {
+// GET: Validación del webhook de WhatsApp
+export async function GET(req: NextRequest) {
+  const url = new URL(req.url)
+  const segments = url.pathname.split('/')
+  const slug = segments[segments.length - 1]
+
   const searchParams = req.nextUrl.searchParams
   const mode = searchParams.get('hub.mode')
   const token = searchParams.get('hub.verify_token')
@@ -15,7 +17,7 @@ export async function GET(
   }
 
   const business = await prisma.business.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
   })
 
   if (!business || business.webhookToken !== token) {
@@ -25,23 +27,23 @@ export async function GET(
   return new NextResponse(challenge, { status: 200 })
 }
 
-// Recepción de mensajes
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { slug: string } }
-) {
+// POST: Recepción de mensajes entrantes
+export async function POST(req: NextRequest) {
+  const url = new URL(req.url)
+  const segments = url.pathname.split('/')
+  const slug = segments[segments.length - 1]
+
   try {
     const body = await req.json()
 
     const business = await prisma.business.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
     })
 
     if (!business || !business.webhookToken) {
       return new NextResponse('Business no encontrado o sin token', { status: 404 })
     }
 
-    // --- Validación básica
     if (body.object !== 'whatsapp_business_account') {
       return new NextResponse('No es un evento de WhatsApp', { status: 400 })
     }
@@ -74,4 +76,3 @@ export async function POST(
     return new NextResponse('Error interno del servidor', { status: 500 })
   }
 }
-
