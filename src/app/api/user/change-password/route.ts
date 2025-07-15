@@ -6,7 +6,8 @@ import { jwtVerify, SignJWT } from 'jose'
 
 export async function POST(request: Request) {
   try {
-    const token = cookies().get('token')?.value
+    const cookieStore = cookies()
+    const token = cookieStore.get('token')?.value
 
     if (!token) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
@@ -24,7 +25,6 @@ export async function POST(request: Request) {
 
     const hashed = await bcrypt.hash(password, 10)
 
-    // Actualiza contraseña en la base de datos
     await prisma.user.update({
       where: { id: payload.id },
       data: {
@@ -33,7 +33,6 @@ export async function POST(request: Request) {
       }
     })
 
-    // Reemitir token actualizado con changePassword: false
     const newToken = await new SignJWT({
       id: payload.id,
       user_name: payload.user_name,
@@ -44,7 +43,6 @@ export async function POST(request: Request) {
       .setExpirationTime('7d')
       .sign(secret)
 
-    // Crear respuesta y actualizar cookie
     const response = NextResponse.json({ message: 'Contraseña actualizada' })
 
     response.cookies.set({
