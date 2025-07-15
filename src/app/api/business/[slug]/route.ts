@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-// Obtener un business por slug
+// GET /api/business/[slug]
 export async function GET(
-  request: NextRequest,
+  _req: NextRequest,
   { params }: { params: { slug: string } }
-): Promise<NextResponse> {
+) {
   try {
+    const { slug } = params
+
     const business = await prisma.business.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       select: {
         id: true,
         name: true,
@@ -29,13 +31,13 @@ export async function GET(
   }
 }
 
-// Actualizar webhookToken de un business por slug
+// PATCH /api/business/[slug]
 export async function PATCH(
-  request: NextRequest,
+  req: NextRequest,
   { params }: { params: { slug: string } }
-): Promise<NextResponse> {
+) {
   try {
-    const { webhookToken } = await request.json()
+    const { webhookToken } = await req.json()
 
     if (!webhookToken || typeof webhookToken !== 'string') {
       return new NextResponse('Token inválido', { status: 400 })
