@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
+import { Tabs, Tab } from '@heroui/react'
 import BusinessWebhookConfig from '../components/business/BusinessWebhookConfig'
 import BusinessWhatsappConfigForm from '../components/business/BusinessWhatsappConfigForm'
-
+import BusinessInfoForm from '../components/business/BusinessInfoForm'
 
 type Business = {
   id: string
@@ -40,20 +41,56 @@ export default function BusinessDetailPage() {
     fetchBusiness()
   }, [slug])
 
-
   if (loading) return <p className="p-6 text-gray-600">Cargando...</p>
   if (!business) return <p className="p-6 text-red-600">Cliente no encontrado</p>
 
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-6">
-      <BusinessWebhookConfig
-        businessName={business.name}
-        slug={business.slug}
-        initialToken={business.webhookToken}
-      />
+    <div className="p-6 max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold text-orange-600 mb-6">
+        Cliente: {business.name}
+      </h1>
 
-      <BusinessWhatsappConfigForm businessId={business.id} />
+      <Tabs
+        fullWidth
+        aria-label="Detalles del cliente"
+        variant="underlined"
+        classNames={{
+          tabList: 'gap-6 border-b border-gray-200',
+          tab: 'text-sm font-medium',
+          tabContent: 'group-data-[selected=true]:text-orange-600 group-data-[selected=true]:border-orange-500',
+          panel: 'mt-6',
+        }}
+        color="warning"
+      >
+        <Tab key="info" title="Información">
+          <BusinessInfoForm
+            slug={business.slug}
+            initialName={business.name}
+            initialStatus={business.status}
+            onUpdate={(updates) => {
+              setBusiness((prev) => prev ? { ...prev, ...updates } : prev)
+            }}
+          />
+        </Tab>
 
+        <Tab key="ws" title="Configuración WS">
+          <div className="space-y-6">
+            <BusinessWebhookConfig
+              businessName={business.name}
+              slug={business.slug}
+              initialToken={business.webhookToken}
+            />
+            <BusinessWhatsappConfigForm businessId={business.id} />
+          </div>
+        </Tab>
+
+        <Tab key="bots" title="Bots">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800">Configuración de bots</h2>
+            <p className="text-gray-600">Próximamente podrás administrar bots desde aquí.</p>
+          </div>
+        </Tab>
+      </Tabs>
     </div>
   )
 }

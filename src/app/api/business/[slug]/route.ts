@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { BusinessStatus } from '@prisma/client'
 
 // GET /api/business/[slug]
 export async function GET(req: NextRequest) {
@@ -45,20 +46,37 @@ export async function PATCH(req: NextRequest) {
   }
 
   try {
-    const { webhookToken } = await req.json()
+    const body = await req.json()
+    const { name, status, webhookToken } = body
 
-    if (!webhookToken || typeof webhookToken !== 'string') {
-      return new NextResponse('Token inválido', { status: 400 })
+    const data: {
+      name?: string
+      status?: BusinessStatus
+      webhookToken?: string
+    } = {}
+
+    if (typeof name === 'string' && name.trim()) data.name = name
+    if (typeof status === 'string' && status.trim()) {
+      if (Object.values(BusinessStatus).includes(status as BusinessStatus)) {
+        data.status = status as BusinessStatus
+      } else {
+        return new NextResponse('Status inválido', { status: 400 })
+      }
+    }
+    if (typeof webhookToken === 'string' && webhookToken.trim()) data.webhookToken = webhookToken
+
+    if (Object.keys(data).length === 0) {
+      return new NextResponse('No hay campos válidos para actualizar', { status: 400 })
     }
 
     const updated = await prisma.business.update({
       where: { slug },
-      data: { webhookToken },
+      data,
     })
 
     return NextResponse.json(updated)
   } catch (error) {
     console.error('[BUSINESS_PATCH_BY_SLUG]', error)
-    return new NextResponse('Error al actualizar el token', { status: 500 })
+    return new NextResponse('Error al actualizar el negocio', { status: 500 })
   }
 }

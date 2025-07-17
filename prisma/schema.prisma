@@ -63,7 +63,7 @@ model Business {
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
   whatsappConfig  BusinessWhatsappConfig?
-  apiIntegrations BusinessApiIntegration[] // <-- CAMPO RELACIÓN INVERSA AÑADIDO
+  apiIntegrations BusinessApiIntegration[]
 }
 
 model BusinessApiIntegration {
