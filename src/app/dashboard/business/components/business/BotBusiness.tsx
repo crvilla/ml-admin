@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Card, CardHeader, CardBody } from '@heroui/react'
 import { PlusCircle } from 'lucide-react'
+import BotCreateForm from './BotCreateForm'
 
 type BotBusiness = {
   id: string
@@ -16,50 +17,38 @@ export default function BotBusiness({ businessId }: { businessId: string }) {
   const [loading, setLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
 
-  const [isEditing, setIsEditing] = useState(false)
-
-
+  const fetchBots = async () => {
+    try {
+      const res = await fetch(`/api/bot_business/${businessId}`)
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      const data = await res.json()
+      setBots(data)
+    } catch (err) {
+      console.error('Error al cargar bots', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     if (!businessId) return
-
-    const fetchBots = async () => {
-      try {
-        const res = await fetch(`/api/bot_business/${businessId}`)
-        if (!res.ok) throw new Error(`Error ${res.status}`)
-        const data = await res.json()
-        setBots(data)
-      } catch (err) {
-        console.error('Error al cargar bots', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchBots()
-
-    const fetchWhatsappConfigs = async () => {
-      try {
-        const res = await fetch(`/api/whatsapp/config/all/${businessId}`)
-        if (!res.ok) throw new Error(`Error ${res.status}`)
-
-
-      } catch (err) {
-        console.error('Error al cargar configuraciones de WhatsApp', err)
-      }
-    }
-
-    fetchWhatsappConfigs()
   }, [businessId])
 
   if (loading) return <p className="text-gray-600">Cargando bots...</p>
 
-  if (isCreating || isEditing) {
+  if (isCreating) {
     return (
-      <h1>create form</h1>
+      <BotCreateForm
+        businessId={businessId}
+        onCreated={() => {
+          setIsCreating(false)
+          fetchBots()
+        }}
+        onCancel={() => setIsCreating(false)}
+      />
     )
   }
-
 
   if (bots.length === 0) {
     return (
@@ -88,33 +77,21 @@ export default function BotBusiness({ businessId }: { businessId: string }) {
             <p className="text-xs text-gray-400 mt-2">
               Creado: {new Date(bot.createdAt).toLocaleString()}
             </p>
-            <button
-              onClick={async () => {
-                try {
-                  const res = await fetch(`/api/bot_business/detail/${bot.id}`)
-                  if (!res.ok) throw new Error('Error cargando bot')   
-                  setIsEditing(true)
-                } catch (e) {
-                  console.error(e)
-                }
-              }}
-              className="absolute top-2 right-2 text-sm text-blue-600 hover:underline"
-            >
-              Editar
-            </button>
           </CardBody>
         </Card>
       ))}
 
       {/* Card para crear nuevo bot */}
-      <Card
-        onClick={() => setIsCreating(true)}
-        className="cursor-pointer border-2 border-dashed border-orange-500 hover:bg-orange-50 transition"
-      >
-        <CardHeader className="flex flex-col items-center justify-center text-orange-600">
+      <Card className="cursor-pointer border-2 border-dashed border-orange-500 hover:bg-orange-50 transition">
+        <div
+          onClick={() => setIsCreating(true)}
+          role="button"
+          tabIndex={0}
+          className="w-full h-full flex flex-col items-center justify-center text-orange-600 py-6 focus:outline-none focus:ring-2 focus:ring-orange-500"
+        >
           <PlusCircle size={32} className="mb-2" />
           <h3 className="text-md font-semibold">Crear nuevo bot</h3>
-        </CardHeader>
+        </div>
       </Card>
     </div>
   )

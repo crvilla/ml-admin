@@ -27,5 +27,35 @@ export async function GET(req: NextRequest) {
   }
 }
 
+export async function POST(req: NextRequest) {
+  const businessId = getBusinessIdFromUrl(req)
 
+  if (!businessId) {
+    return NextResponse.json({ error: 'Business ID is required' }, { status: 400 })
+  }
+
+  try {
+    const body = await req.json()
+    const { name, description, webhookURL, whatsappConfigId } = body
+
+    if (!name || !webhookURL || !whatsappConfigId) {
+      return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 })
+    }
+
+    const newBot = await prisma.businessBot.create({
+      data: {
+        name,
+        description,
+        webhookURL,
+        businessId,
+        whatsappConfigId,
+      },
+    })
+
+    return NextResponse.json(newBot, { status: 201 })
+  } catch (error) {
+    console.error('[POST] Error creating bot:', error)
+    return NextResponse.json({ error: 'Error al crear el bot' }, { status: 500 })
+  }
+}
 
