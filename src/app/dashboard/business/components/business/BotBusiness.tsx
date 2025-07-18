@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardHeader, CardBody } from '@heroui/react'
 import { PlusCircle } from 'lucide-react'
 import BotCreateForm from './BotCreateForm'
+import { useRouter } from 'next/navigation'
 
 type BotBusiness = {
   id: string
@@ -16,6 +17,7 @@ export default function BotBusiness({ businessId }: { businessId: string }) {
   const [bots, setBots] = useState<BotBusiness[]>([])
   const [loading, setLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
+  const router = useRouter()
 
   const fetchBots = async () => {
     try {
@@ -68,15 +70,27 @@ export default function BotBusiness({ businessId }: { businessId: string }) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {bots.map((bot) => (
-        <Card key={bot.id} className="relative">
+        <Card
+          key={bot.id}
+          className="relative border border-orange-400 rounded-2xl bg-white shadow-sm"
+        >
           <CardHeader>
             <h3 className="text-lg font-semibold text-orange-600">{bot.name}</h3>
           </CardHeader>
           <CardBody>
-            <p className="text-sm text-gray-600">{bot.description || 'Sin descripción.'}</p>
+            <p className="text-sm text-gray-600">
+              {bot.description || 'Sin descripción.'}
+            </p>
             <p className="text-xs text-gray-400 mt-2">
               Creado: {new Date(bot.createdAt).toLocaleString()}
             </p>
+
+            <button
+              className="mt-4 px-4 py-2 text-sm text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition"
+               onClick={() => router.push(`/dashboard/bot/${bot.id}`)}
+            >
+              Ver Bot
+            </button>
           </CardBody>
         </Card>
       ))}
