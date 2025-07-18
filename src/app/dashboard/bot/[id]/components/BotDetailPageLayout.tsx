@@ -4,6 +4,7 @@ import { Accordion, AccordionItem } from '@heroui/react'
 import { Bot, MessageCircle, PlugZap } from 'lucide-react'
 import BotConfigForm from './BotConfigForm'
 import { useParams } from 'next/navigation'
+import WhatsappConfigForm from './WhatsappConfigForm'
 
 export default function BotDetailPageLayout() {
   const params = useParams()
@@ -50,9 +51,7 @@ export default function BotDetailPageLayout() {
               </div>
             }
           >
-            <div className="text-center">
-              <h1 className="text-sm font-medium text-gray-700">CONFIG WS</h1>
-            </div>
+            <WhatsappConfigForm botId={botId} />
           </AccordionItem>
 
           <AccordionItem

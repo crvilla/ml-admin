@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const config = await prisma.businessWhatsappConfig.findUnique({
+    const config = await prisma.businessWhatsappConfig.findFirst({
       where: { businessId },
     })
 
