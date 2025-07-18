@@ -5,9 +5,11 @@ import { toast } from 'sonner'
 
 type Props = {
   businessId: string
+  onCreated?: () => void
+  onCancel?: () => void
 }
 
-export default function BusinessWhatsappConfigForm({ businessId }: Props) {
+export default function BusinessWhatsappConfigForm({ businessId, onCreated, onCancel }: Props) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -62,6 +64,7 @@ export default function BusinessWhatsappConfigForm({ businessId }: Props) {
 
       if (res.ok) {
         toast.success('Configuración de WhatsApp guardada')
+        onCreated?.()
       } else {
         toast.error('Error al guardar la configuración')
       }
@@ -165,6 +168,14 @@ export default function BusinessWhatsappConfigForm({ businessId }: Props) {
       >
         Guardar configuración
       </button>
+      {onCancel && (
+        <button
+          onClick={onCancel}
+          className="w-full mt-2 px-4 py-2 text-sm font-semibold rounded border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+        >
+          Cancelar
+        </button>
+      )}
     </div>
   )
 }

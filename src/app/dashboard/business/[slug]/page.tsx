@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { Tabs, Tab } from '@heroui/react'
 import BusinessWebhookConfig from '../components/business/BusinessWebhookConfig'
-import BusinessWhatsappConfigForm from '../components/business/BusinessWhatsappConfigForm'
 import BusinessInfoForm from '../components/business/BusinessInfoForm'
 import BotBusiness from '../components/business/BotBusiness'
+import BusinessWhatsappConfigs from '../components/business/BusinessWhatsappConfigs'
 
 type Business = {
   id: string
@@ -81,7 +81,7 @@ export default function BusinessDetailPage() {
               slug={business.slug}
               initialToken={business.webhookToken}
             />
-            <BusinessWhatsappConfigForm businessId={business.id} />
+            <BusinessWhatsappConfigs businessId={business.id} />
           </div>
         </Tab>
 
