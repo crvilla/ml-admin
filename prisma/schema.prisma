@@ -28,11 +28,11 @@ model User {
 }
 
 enum BusinessStatus {
-  ACTIVE // Cliente con servicio funcionando
-  PENDING // En prueba, demo o esperando activación
-  INACTIVE // Ya no se usa, pero no ha sido eliminado
-  BLOCKED // Suspendido manualmente por problemas
-  SUSPENDED // Suspendido por impago u otro automático
+  ACTIVE     // Cliente con servicio funcionando
+  PENDING    // En prueba, demo o esperando activación
+  INACTIVE   // Ya no se usa, pero no ha sido eliminado
+  BLOCKED    // Suspendido manualmente por problemas
+  SUSPENDED  // Suspendido por impago u otro automático
 }
 
 enum ApiName {
@@ -62,7 +62,7 @@ model Business {
   webhookURL      String?
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
-  whatsappConfig  BusinessWhatsappConfig?
+  whatsappConfigs BusinessWhatsappConfig[] // ← relación uno-a-muchos
   apiIntegrations BusinessApiIntegration[]
   bots            BusinessBot[]
 }
@@ -77,16 +77,20 @@ model BusinessApiIntegration {
   publicApiKey  String               @unique
   status        ApiIntegrationStatus @default(ACTIVE)
 
+  botId         String
+  bot           BusinessBot          @relation(fields: [botId], references: [id])
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@unique([businessId, apiName])
 }
 
+
 model BusinessWhatsappConfig {
   id                    String      @id @default(cuid())
   name                  String
-  businessId            String      @unique
+  businessId            String
   business              Business    @relation(fields: [businessId], references: [id])
   wabaId                String
   phoneNumberId         String
@@ -108,6 +112,9 @@ model BusinessBot {
   business         Business               @relation(fields: [businessId], references: [id])
   whatsappConfigId String
   whatsappConfig   BusinessWhatsappConfig @relation(fields: [whatsappConfigId], references: [id])
+  apiIntegrations  BusinessApiIntegration[]
+
   createdAt        DateTime               @default(now())
   updatedAt        DateTime               @updatedAt
 }
+

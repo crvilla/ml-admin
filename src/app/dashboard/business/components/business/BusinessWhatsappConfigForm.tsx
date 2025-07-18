@@ -22,34 +22,14 @@ export default function BusinessWhatsappConfigForm({ businessId, onCreated, onCa
   const [testDestinationNumber, setTestDestinationNumber] = useState('')
 
   useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const res = await fetch(`/api/whatsapp/config/${businessId}`)
-        if (res.ok) {
-          const data = await res.json()
-          setName(data.name || '')
-          setWabaId(data.wabaId)
-          setPhoneNumberId(data.phoneNumberId)
-          setSenderPhoneNumber(data.senderPhoneNumber)
-          setAccessToken(data.accessToken)
-          setEnvironment(data.environment)
-          setTestDestinationNumber(data.testDestinationNumber || '')
-        }
-      } catch (err) {
-        console.error('No WhatsApp config found, starting fresh.', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchConfig()
-  }, [businessId])
+    setLoading(false)
+  }, [])
 
   const handleSave = async () => {
     setSaving(true)
     try {
       const res = await fetch(`/api/whatsapp/config/${businessId}`, {
-        method: 'PUT',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
