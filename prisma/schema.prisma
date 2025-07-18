@@ -64,38 +64,50 @@ model Business {
   updatedAt       DateTime                 @updatedAt
   whatsappConfig  BusinessWhatsappConfig?
   apiIntegrations BusinessApiIntegration[]
+  bots            BusinessBot[]
 }
 
 model BusinessApiIntegration {
-  id         String   @id @default(cuid())
-  businessId String
-  business   Business @relation(fields: [businessId], references: [id])
+  id            String   @id @default(cuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id])
 
-  apiName      ApiName
-  externalId   String
-  publicApiKey String               @unique
-  status       ApiIntegrationStatus @default(ACTIVE)
+  apiName       ApiName
+  externalId    String
+  publicApiKey  String               @unique
+  status        ApiIntegrationStatus @default(ACTIVE)
 
-  whatsappConfigId String? // <-- si quieres opcional
-  whatsappConfig   BusinessWhatsappConfig? @relation(fields: [whatsappConfigId], references: [id]) // RELACIÓN INVERSA
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@unique([businessId, apiName])
 }
 
 model BusinessWhatsappConfig {
-  id                    String                   @id @default(cuid())
-  businessId            String                   @unique
-  business              Business                 @relation(fields: [businessId], references: [id])
+  id                    String      @id @default(cuid())
+  name                  String
+  businessId            String      @unique
+  business              Business    @relation(fields: [businessId], references: [id])
   wabaId                String
   phoneNumberId         String
   senderPhoneNumber     String
   accessToken           String
   environment           WSEnvironment
   testDestinationNumber String?
-  createdAt             DateTime                 @default(now())
-  updatedAt             DateTime                 @updatedAt
-  integrations          BusinessApiIntegration[] // <-- RELACIÓN INVERSA MANTENIDA
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  bots                  BusinessBot[]
+}
+
+model BusinessBot {
+  id               String                 @id @default(cuid())
+  name             String
+  description      String?
+  webhookURL       String
+  businessId       String
+  business         Business               @relation(fields: [businessId], references: [id])
+  whatsappConfigId String
+  whatsappConfig   BusinessWhatsappConfig @relation(fields: [whatsappConfigId], references: [id])
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
 }

@@ -11,6 +11,7 @@ export default function BusinessWhatsappConfigForm({ businessId }: Props) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
+  const [name, setName] = useState('')
   const [wabaId, setWabaId] = useState('')
   const [phoneNumberId, setPhoneNumberId] = useState('')
   const [senderPhoneNumber, setSenderPhoneNumber] = useState('')
@@ -24,6 +25,7 @@ export default function BusinessWhatsappConfigForm({ businessId }: Props) {
         const res = await fetch(`/api/whatsapp/config/${businessId}`)
         if (res.ok) {
           const data = await res.json()
+          setName(data.name || '')
           setWabaId(data.wabaId)
           setPhoneNumberId(data.phoneNumberId)
           setSenderPhoneNumber(data.senderPhoneNumber)
@@ -48,6 +50,7 @@ export default function BusinessWhatsappConfigForm({ businessId }: Props) {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          name,
           wabaId,
           phoneNumberId,
           senderPhoneNumber,
@@ -77,47 +80,80 @@ export default function BusinessWhatsappConfigForm({ businessId }: Props) {
       <h2 className="text-xl font-semibold text-gray-800">Configuración para envío de mensajes</h2>
 
       <div className="grid gap-4">
-        <input
-          className="w-full px-3 py-2 rounded border border-gray-300 text-sm"
-          placeholder="WABA ID"
-          value={wabaId}
-          onChange={(e) => setWabaId(e.target.value)}
-        />
-        <input
-          className="w-full px-3 py-2 rounded border border-gray-300 text-sm"
-          placeholder="Phone Number ID"
-          value={phoneNumberId}
-          onChange={(e) => setPhoneNumberId(e.target.value)}
-        />
-        <input
-          className="w-full px-3 py-2 rounded border border-gray-300 text-sm"
-          placeholder="Número remitente (ej: 15551901575)"
-          value={senderPhoneNumber}
-          onChange={(e) => setSenderPhoneNumber(e.target.value)}
-        />
-        <input
-          className="w-full px-3 py-2 rounded border border-gray-300 text-sm"
-          placeholder="Access Token"
-          value={accessToken}
-          onChange={(e) => setAccessToken(e.target.value)}
-        />
-        {(environment === 'DEV' || environment === 'TEST') && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Nombre de esta configuración</label>
           <input
             className="w-full px-3 py-2 rounded border border-gray-300 text-sm"
-            placeholder="Número de destino para pruebas (ej: 573001112233)"
-            value={testDestinationNumber}
-            onChange={(e) => setTestDestinationNumber(e.target.value)}
+            placeholder="Ej: WhatsApp Principal"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">WABA ID</label>
+          <input
+            className="w-full px-3 py-2 rounded border border-gray-300 text-sm"
+            placeholder="WABA ID"
+            value={wabaId}
+            onChange={(e) => setWabaId(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Phone Number ID</label>
+          <input
+            className="w-full px-3 py-2 rounded border border-gray-300 text-sm"
+            placeholder="Phone Number ID"
+            value={phoneNumberId}
+            onChange={(e) => setPhoneNumberId(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Número remitente</label>
+          <input
+            className="w-full px-3 py-2 rounded border border-gray-300 text-sm"
+            placeholder="Ej: 15551901575"
+            value={senderPhoneNumber}
+            onChange={(e) => setSenderPhoneNumber(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Access Token</label>
+          <input
+            className="w-full px-3 py-2 rounded border border-gray-300 text-sm"
+            placeholder="Access Token"
+            value={accessToken}
+            onChange={(e) => setAccessToken(e.target.value)}
+          />
+        </div>
+
+        {(environment === 'DEV' || environment === 'TEST') && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Número de destino para pruebas</label>
+            <input
+              className="w-full px-3 py-2 rounded border border-gray-300 text-sm"
+              placeholder="Ej: 573001112233"
+              value={testDestinationNumber}
+              onChange={(e) => setTestDestinationNumber(e.target.value)}
+            />
+          </div>
         )}
-        <select
-          className="w-full px-3 py-2 rounded border border-gray-300 text-sm"
-          value={environment}
-          onChange={(e) => setEnvironment(e.target.value)}
-        >
-          <option value="DEV">DEV</option>
-          <option value="TEST">TEST</option>
-          <option value="PROD">PROD</option>
-        </select>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Ambiente</label>
+          <select
+            className="w-full px-3 py-2 rounded border border-gray-300 text-sm"
+            value={environment}
+            onChange={(e) => setEnvironment(e.target.value)}
+          >
+            <option value="DEV">DEV</option>
+            <option value="TEST">TEST</option>
+            <option value="PROD">PROD</option>
+          </select>
+        </div>
       </div>
 
       <button

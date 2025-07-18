@@ -40,6 +40,7 @@ export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
     const {
+      name,
       wabaId,
       phoneNumberId,
       senderPhoneNumber,
@@ -48,13 +49,21 @@ export async function PUT(req: NextRequest) {
       testDestinationNumber,
     } = body
 
-    if (!wabaId || !phoneNumberId || !senderPhoneNumber || !accessToken || !environment) {
+    if (
+      !name ||
+      !wabaId ||
+      !phoneNumberId ||
+      !senderPhoneNumber ||
+      !accessToken ||
+      !environment
+    ) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
     const updated = await prisma.businessWhatsappConfig.upsert({
       where: { businessId },
       update: {
+        name,
         wabaId,
         phoneNumberId,
         senderPhoneNumber,
@@ -64,6 +73,7 @@ export async function PUT(req: NextRequest) {
       },
       create: {
         businessId,
+        name,
         wabaId,
         phoneNumberId,
         senderPhoneNumber,

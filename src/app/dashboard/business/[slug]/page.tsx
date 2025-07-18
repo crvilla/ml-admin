@@ -6,6 +6,7 @@ import { Tabs, Tab } from '@heroui/react'
 import BusinessWebhookConfig from '../components/business/BusinessWebhookConfig'
 import BusinessWhatsappConfigForm from '../components/business/BusinessWhatsappConfigForm'
 import BusinessInfoForm from '../components/business/BusinessInfoForm'
+import BotBusiness from '../components/business/BotBusiness'
 
 type Business = {
   id: string
@@ -85,11 +86,12 @@ export default function BusinessDetailPage() {
         </Tab>
 
         <Tab key="bots" title="Bots">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-800">Configuración de bots</h2>
-            <p className="text-gray-600">Próximamente podrás administrar bots desde aquí.</p>
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-800">Bots configurados</h2>
+            <BotBusiness businessId={business.id} />
           </div>
         </Tab>
+
       </Tabs>
     </div>
   )
