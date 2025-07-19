@@ -20,20 +20,14 @@ export default function WhatsappConfigForm({ botId }: { botId: string }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchWhatsappConfig = async () => {
+    const fetchBotWithConfig = async () => {
       try {
-        // 1. Obtener el bot para acceder a businessId
-        const botRes = await fetch(`/api/bot/${botId}`)
-        if (!botRes.ok) throw new Error('No se pudo cargar el bot')
-        const botData = await botRes.json()
-        const businessId = botData.businessId
+        const res = await fetch(`/api/bot/${botId}`)
+        if (!res.ok) throw new Error('No se pudo cargar el bot')
+        const data = await res.json()
 
-        // 2. Obtener la configuración de WhatsApp usando businessId
-        const configRes = await fetch(`/api/whatsapp/config/${businessId}`)
-        if (!configRes.ok) throw new Error('No se pudo cargar la configuración de WhatsApp')
-        const configData = await configRes.json()
-
-        setConfig(configData)
+        if (!data.whatsappConfig) throw new Error('El bot no tiene configuración de WhatsApp')
+        setConfig(data.whatsappConfig)
       } catch (err) {
         console.error(err)
       } finally {
@@ -41,7 +35,7 @@ export default function WhatsappConfigForm({ botId }: { botId: string }) {
       }
     }
 
-    fetchWhatsappConfig()
+    fetchBotWithConfig()
   }, [botId])
 
   if (loading) return <p className="text-sm text-gray-600">Cargando configuración...</p>

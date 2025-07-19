@@ -15,77 +15,14 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const config = await prisma.businessWhatsappConfig.findFirst({
+    const configs = await prisma.businessWhatsappConfig.findMany({
       where: { businessId },
+      select: { id: true, name: true },
     })
 
-    if (!config) {
-      return NextResponse.json({ error: 'WhatsApp config not found' }, { status: 404 })
-    }
-
-    return NextResponse.json(config)
+    return NextResponse.json(configs)
   } catch (err) {
     console.error('[GET] Error fetching WhatsApp config:', err)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
-  }
-}
-
-export async function PUT(req: NextRequest) {
-  const businessId = getBusinessIdFromUrl(req)
-
-  if (!businessId) {
-    return NextResponse.json({ error: 'Business ID is required' }, { status: 400 })
-  }
-
-  try {
-    const body = await req.json()
-    const {
-      name,
-      wabaId,
-      phoneNumberId,
-      senderPhoneNumber,
-      accessToken,
-      environment,
-      testDestinationNumber,
-    } = body
-
-    if (
-      !name ||
-      !wabaId ||
-      !phoneNumberId ||
-      !senderPhoneNumber ||
-      !accessToken ||
-      !environment
-    ) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
-    }
-
-    const updated = await prisma.businessWhatsappConfig.upsert({
-      where: { businessId },
-      update: {
-        name,
-        wabaId,
-        phoneNumberId,
-        senderPhoneNumber,
-        accessToken,
-        environment,
-        testDestinationNumber,
-      },
-      create: {
-        businessId,
-        name,
-        wabaId,
-        phoneNumberId,
-        senderPhoneNumber,
-        accessToken,
-        environment,
-        testDestinationNumber,
-      },
-    })
-
-    return NextResponse.json(updated)
-  } catch (err) {
-    console.error('[PUT] Error saving WhatsApp config:', err)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }

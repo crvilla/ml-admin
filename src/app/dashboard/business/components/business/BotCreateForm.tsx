@@ -25,7 +25,7 @@ export default function BotCreateForm({ businessId, onCreated, onCancel }: Props
   useEffect(() => {
     const fetchConfigs = async () => {
       try {
-        const res = await fetch(`/api/whatsapp/config/all/${businessId}`)
+        const res = await fetch(`/api/whatsapp/business/${businessId}`)
         if (!res.ok) throw new Error('Error al obtener configuraciones de WhatsApp')
         const data = await res.json()
         setConfigs(data)

@@ -8,8 +8,15 @@ type Bot = {
   description: string | null
   webhookURL: string
   whatsappConfig: {
+    id: string
     name: string
   }
+  businessId: string
+}
+
+type WhatsappConfig = {
+  id: string
+  name: string
 }
 
 export default function BotConfigForm({ botId }: { botId: string }) {
@@ -18,6 +25,8 @@ export default function BotConfigForm({ botId }: { botId: string }) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [webhookURL, setWebhookURL] = useState('')
+  const [whatsappConfigId, setWhatsappConfigId] = useState('')
+  const [wsConfigs, setWsConfigs] = useState<WhatsappConfig[]>([])
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -30,6 +39,14 @@ export default function BotConfigForm({ botId }: { botId: string }) {
         setName(data.name)
         setDescription(data.description || '')
         setWebhookURL(data.webhookURL)
+        setWhatsappConfigId(data.whatsappConfig.id)
+
+        // Fetch configs usando el businessId del bot
+  
+        const wsRes = await fetch(`/api/whatsapp/business/${data.businessId}`)
+        if (!wsRes.ok) throw new Error('Error al cargar configuraciones de WhatsApp')
+        const configs = await wsRes.json()
+        setWsConfigs(configs)
       } catch (error) {
         console.error(error)
       } finally {
@@ -46,7 +63,7 @@ export default function BotConfigForm({ botId }: { botId: string }) {
       const res = await fetch(`/api/bot/${botId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description, webhookURL }),
+        body: JSON.stringify({ name, description, webhookURL, whatsappConfigId }),
       })
 
       if (!res.ok) throw new Error('Error al actualizar bot')
@@ -94,14 +111,21 @@ export default function BotConfigForm({ botId }: { botId: string }) {
         />
       </div>
 
-      <div className="pt-2">
-        <p className="text-sm font-medium text-gray-700 mb-1">Número de WhatsApp</p>
-        <p className="text-orange-600 font-semibold text-sm bg-orange-50 rounded-xl px-4 py-2 border border-orange-200 shadow-sm">
-          {bot.whatsappConfig.name}
-        </p>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Número de WhatsApp</label>
+        <select
+          value={whatsappConfigId}
+          onChange={(e) => setWhatsappConfigId(e.target.value)}
+          className="w-full border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-2 text-sm shadow-sm transition"
+        >
+          {wsConfigs.map((config) => (
+            <option key={config.id} value={config.id}>
+              {config.name}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Botón actualizar */}
       <div className="pt-2">
         <button
           onClick={handleUpdate}

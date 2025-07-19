@@ -20,7 +20,7 @@ export default function BusinessWhatsappConfigs({ businessId }: { businessId: st
 
   const fetchConfigs = async () => {
     try {
-      const res = await fetch(`/api/whatsapp/config/all/${businessId}`)
+      const res = await fetch(`/api/whatsapp/business/${businessId}`)
       if (!res.ok) throw new Error(`Error ${res.status}`)
       const data = await res.json()
       setConfigs(data)

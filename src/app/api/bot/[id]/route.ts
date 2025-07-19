@@ -18,11 +18,8 @@ export async function GET(req: NextRequest) {
     const bot = await prisma.businessBot.findUnique({
       where: { id: botId },
       include: {
-        whatsappConfig: {
-          select: {
-            name: true,
-          },
-        },
+        whatsappConfig: true, // Trae todos los campos
+        apiIntegrations: true, // Trae todas las integraciones relacionadas
       },
     })
 
@@ -46,7 +43,7 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { name, description, webhookURL } = body
+    const { name, description, webhookURL, whatsappConfigId } = body
 
     await prisma.businessBot.update({
       where: { id: botId },
@@ -54,18 +51,15 @@ export async function PUT(req: NextRequest) {
         name,
         description,
         webhookURL,
+        whatsappConfigId,
       },
     })
 
-    // Volvemos a traer el bot con include para devolverlo completo
     const updatedBot = await prisma.businessBot.findUnique({
       where: { id: botId },
       include: {
-        whatsappConfig: {
-          select: {
-            name: true,
-          },
-        },
+        whatsappConfig: true,
+        apiIntegrations: true,
       },
     })
 
