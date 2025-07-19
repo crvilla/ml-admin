@@ -19,6 +19,31 @@ async function main() {
       console.log(`✅ Rol "${roleName}" creado con id ${newRole.id}`)
     }
   }
+
+  const apiCatalogEntries = [
+    { name: 'leads_api', type: 'PROD', baseUrl: 'https://ml-dashboard-client-six.vercel.app/' },
+    { name: 'chats_api', type: 'PROD', baseUrl: 'https://ml-business-api-seven.vercel.app/' },
+    { name: 'leads_api', type: 'DEV', baseUrl: 'https://ml-dashboard-client.vercel.app/' },
+    { name: 'chats_api', type: 'DEV', baseUrl: 'https://ml-business-api.vercel.app/' },
+  ]
+
+  for (const api of apiCatalogEntries) {
+    const exists = await prisma.apiIntegrationCatalog.findFirst({
+      where: {
+        name: api.name,
+        type: api.type,
+      },
+    })
+
+    if (exists) {
+      console.log(`⚠️ API "${api.name}" (${api.type}) ya existe`)
+    } else {
+      const newApi = await prisma.apiIntegrationCatalog.create({
+        data: api,
+      })
+      console.log(`✅ API "${newApi.name}" (${newApi.type}) creada`)
+    }
+  }
 }
 
 main()
