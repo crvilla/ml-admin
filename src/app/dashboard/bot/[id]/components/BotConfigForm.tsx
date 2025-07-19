@@ -7,6 +7,7 @@ type Bot = {
   name: string
   description: string | null
   webhookURL: string
+  webhookTestURL?: string | null
   whatsappConfig: {
     id: string
     name: string
@@ -25,6 +26,7 @@ export default function BotConfigForm({ botId }: { botId: string }) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [webhookURL, setWebhookURL] = useState('')
+  const [webhookTestURL, setWebhookTestURL] = useState('')
   const [whatsappConfigId, setWhatsappConfigId] = useState('')
   const [wsConfigs, setWsConfigs] = useState<WhatsappConfig[]>([])
   const [saving, setSaving] = useState(false)
@@ -39,10 +41,9 @@ export default function BotConfigForm({ botId }: { botId: string }) {
         setName(data.name)
         setDescription(data.description || '')
         setWebhookURL(data.webhookURL)
+        setWebhookTestURL(data.webhookTestURL || '')
         setWhatsappConfigId(data.whatsappConfig.id)
 
-        // Fetch configs usando el businessId del bot
-  
         const wsRes = await fetch(`/api/whatsapp/business/${data.businessId}`)
         if (!wsRes.ok) throw new Error('Error al cargar configuraciones de WhatsApp')
         const configs = await wsRes.json()
@@ -63,7 +64,13 @@ export default function BotConfigForm({ botId }: { botId: string }) {
       const res = await fetch(`/api/bot/${botId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description, webhookURL, whatsappConfigId }),
+        body: JSON.stringify({
+          name,
+          description,
+          webhookURL,
+          webhookTestURL,
+          whatsappConfigId,
+        }),
       })
 
       if (!res.ok) throw new Error('Error al actualizar bot')
@@ -112,7 +119,17 @@ export default function BotConfigForm({ botId }: { botId: string }) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Número de WhatsApp</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Webhook de prueba (opcional)</label>
+        <input
+          type="text"
+          value={webhookTestURL}
+          onChange={(e) => setWebhookTestURL(e.target.value)}
+          className="w-full border border-gray-300 focus:border-orange-400 focus:ring-1 focus:ring-orange-400 rounded-xl px-4 py-2 text-sm shadow-sm transition"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Configuracion de  WhatsApp</label>
         <select
           value={whatsappConfigId}
           onChange={(e) => setWhatsappConfigId(e.target.value)}

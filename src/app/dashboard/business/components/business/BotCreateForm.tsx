@@ -18,6 +18,7 @@ export default function BotCreateForm({ businessId, onCreated, onCancel }: Props
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [webhookURL, setWebhookURL] = useState('')
+  const [webhookTestURL, setWebhookTestURL] = useState('')
   const [whatsappConfigId, setWhatsappConfigId] = useState('')
   const [configs, setConfigs] = useState<WhatsappConfig[]>([])
   const [loading, setLoading] = useState(true)
@@ -49,7 +50,13 @@ export default function BotCreateForm({ businessId, onCreated, onCancel }: Props
       const res = await fetch(`/api/bot_business/${businessId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description, webhookURL, whatsappConfigId }),
+        body: JSON.stringify({
+          name,
+          description,
+          webhookURL,
+          webhookTestURL, // ← lo enviamos al backend
+          whatsappConfigId,
+        }),
       })
 
       if (res.ok) {
@@ -99,6 +106,16 @@ export default function BotCreateForm({ businessId, onCreated, onCancel }: Props
             placeholder="https://..."
             value={webhookURL}
             onChange={(e) => setWebhookURL(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Webhook de prueba (opcional)</label>
+          <input
+            className="w-full px-3 py-2 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-300"
+            placeholder="https://..."
+            value={webhookTestURL}
+            onChange={(e) => setWebhookTestURL(e.target.value)}
           />
         </div>
 

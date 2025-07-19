@@ -43,7 +43,7 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { name, description, webhookURL, whatsappConfigId } = body
+    const { name, description, webhookURL, whatsappConfigId, webhookTestURL } = body
 
     await prisma.businessBot.update({
       where: { id: botId },
@@ -51,6 +51,7 @@ export async function PUT(req: NextRequest) {
         name,
         description,
         webhookURL,
+        webhookTestURL,
         whatsappConfigId,
       },
     })
@@ -69,4 +70,3 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: 'Error al actualizar bot' }, { status: 500 })
   }
 }
-

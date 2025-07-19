@@ -127,6 +127,7 @@ model BusinessBot {
   name             String
   description      String?
   webhookURL       String
+  webhookTestURL   String?
   businessId       String
   business         Business                 @relation(fields: [businessId], references: [id])
   whatsappConfigId String

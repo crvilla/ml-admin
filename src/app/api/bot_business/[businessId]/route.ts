@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { name, description, webhookURL, whatsappConfigId } = body
+    const { name, description, webhookURL, whatsappConfigId, webhookTestURL } = body
 
     if (!name || !webhookURL || !whatsappConfigId) {
       return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 })
@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
         name,
         description,
         webhookURL,
+        webhookTestURL,
         businessId,
         whatsappConfigId,
       },
@@ -58,4 +59,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Error al crear el bot' }, { status: 500 })
   }
 }
+
 
