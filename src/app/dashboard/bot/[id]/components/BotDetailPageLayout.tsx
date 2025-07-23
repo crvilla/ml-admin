@@ -1,11 +1,15 @@
 'use client'
 
+import { useParams } from 'next/navigation'
 import { Accordion, AccordionItem } from '@heroui/react'
 import { Bot, MessageCircle, PlugZap } from 'lucide-react'
 import BotConfigForm from './BotConfigForm'
 import WhatsappConfigForm from './WhatsappConfigForm'
 
-export default function BotDetailPageLayout({ botId }: { botId: string }) {
+export default function BotDetailPageLayout() {
+  const params = useParams()
+  const botId = params?.id as string
+
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-gray-100">
       {/* Lado izquierdo: Chat */}

@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing businessId' }, { status: 400 })
     }
 
-    const config = await prisma.businessWhatsappConfig.findUnique({
+    const config = await prisma.businessWhatsappConfig.findFirst({
       where: { businessId },
     })
 
