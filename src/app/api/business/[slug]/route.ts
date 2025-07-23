@@ -99,6 +99,11 @@ export async function POST(req: NextRequest) {
       return new NextResponse('apiKeyPrivate requerido y debe ser string', { status: 400 })
     }
 
+    // Validación contra el token de desarrollo
+    if (apiKeyPrivate === process.env.TOKEN_DEV) {
+      return NextResponse.json({ valid: true })
+    }
+
     const business = await prisma.business.findUnique({
       where: { slug },
       select: { apiKeyPrivate: true },
@@ -115,3 +120,4 @@ export async function POST(req: NextRequest) {
     return new NextResponse('Error al validar el apiKey', { status: 500 })
   }
 }
+

@@ -7,8 +7,6 @@ function getBusinessIdFromUrl(req: NextRequest): string | null {
   return segments[segments.length - 1] || null
 }
 
-const PRIVATE_TOKEN = process.env.PRIVATE_TOKEN
-
 export async function GET(req: NextRequest) {
   const businessId = getBusinessIdFromUrl(req)
   const env = req.nextUrl.searchParams.get('env')?.toUpperCase() as 'DEV' | 'PROD'
@@ -75,6 +73,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'API catalog not found for chats_api in this environment' }, { status: 404 })
     }
 
+    // Obtener el negocio y su apiKeyPrivate
+    const business = await prisma.business.findUnique({
+      where: { id: businessId },
+      select: { apiKeyPrivate: true },
+    })
+
+    if (!business) {
+      return NextResponse.json({ error: 'Business not found' }, { status: 404 })
+    }
+
     // Llamar a la API externa para registrar el negocio
     const res = await fetch(`${api.baseUrl}/api/business`, {
       method: 'POST',
@@ -82,7 +90,7 @@ export async function POST(req: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        token_private: PRIVATE_TOKEN,
+        token_private: business.apiKeyPrivate,
       }),
     })
 
@@ -113,4 +121,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Error al registrar la API' }, { status: 500 })
   }
 }
+
 
