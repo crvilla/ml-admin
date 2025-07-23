@@ -1,10 +1,11 @@
 import BotDetailPageLayout from "./components/BotDetailPageLayout";
-interface BotDetailPageProps {
+
+interface PageProps {
   params: {
-    id: string
-  }
+    id: string;
+  };
 }
 
-export default function BotDetailPage({ params }: BotDetailPageProps) {
-  return <BotDetailPageLayout botId={params.id} />
+export default async function BotDetailPage({ params }: PageProps) {
+  return <BotDetailPageLayout botId={params.id} />;
 }
