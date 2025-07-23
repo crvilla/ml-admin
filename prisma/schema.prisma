@@ -35,11 +35,6 @@ enum BusinessStatus {
   SUSPENDED // Suspendido por impago u otro automático
 }
 
-enum ApiName {
-  LEADS
-  CHATS
-}
-
 enum ApiIntegrationStatus {
   ACTIVE
   INACTIVE
@@ -68,23 +63,18 @@ model Business {
 }
 
 model BusinessApiIntegration {
-  id         String   @id @default(cuid())
-  businessId String
-  business   Business @relation(fields: [businessId], references: [id])
-
-  apiId String
-  api   ApiIntegrationCatalog @relation(fields: [apiId], references: [id], name: "ApiCatalogRelation")
-
-  externalId   String
-  publicApiKey String               @unique
-  status       ApiIntegrationStatus @default(ACTIVE)
-
-  botId String
-  bot   BusinessBot @relation(fields: [botId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id            String   @id @default(cuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id])
+  apiId         String
+  api           ApiIntegrationCatalog @relation(fields: [apiId], references: [id], name: "ApiCatalogRelation")
+  externalId    String
+  publicApiKey  String               @unique
+  status        ApiIntegrationStatus @default(INACTIVE)
+  botId         String?   
+  bot           BusinessBot? @relation(fields: [botId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   @@unique([businessId, apiId])
 }
 

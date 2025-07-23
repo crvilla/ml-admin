@@ -80,3 +80,38 @@ export async function PATCH(req: NextRequest) {
     return new NextResponse('Error al actualizar el negocio', { status: 500 })
   }
 }
+
+// POST /api/business/[slug]
+export async function POST(req: NextRequest) {
+  const url = new URL(req.url)
+  const segments = url.pathname.split('/')
+  const slug = segments[segments.length - 1]
+
+  if (!slug) {
+    return new NextResponse('Slug requerido', { status: 400 })
+  }
+
+  try {
+    const body = await req.json()
+    const { apiKeyPrivate } = body
+
+    if (!apiKeyPrivate || typeof apiKeyPrivate !== 'string') {
+      return new NextResponse('apiKeyPrivate requerido y debe ser string', { status: 400 })
+    }
+
+    const business = await prisma.business.findUnique({
+      where: { slug },
+      select: { apiKeyPrivate: true },
+    })
+
+    if (!business) {
+      return new NextResponse('Negocio no encontrado', { status: 404 })
+    }
+
+    const isValid = business.apiKeyPrivate === apiKeyPrivate
+    return NextResponse.json({ valid: isValid })
+  } catch (error) {
+    console.error('[BUSINESS_VALIDATE_APIKEY]', error)
+    return new NextResponse('Error al validar el apiKey', { status: 500 })
+  }
+}

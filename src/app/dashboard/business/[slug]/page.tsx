@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { Tabs, Tab } from '@heroui/react'
+import { Tabs as SubTabs, Tab as SubTab } from '@heroui/react'
 import BusinessWebhookConfig from '../components/business/BusinessWebhookConfig'
 import BusinessInfoForm from '../components/business/BusinessInfoForm'
 import BotBusiness from '../components/business/BotBusiness'
 import BusinessWhatsappConfigs from '../components/business/BusinessWhatsappConfigs'
+import BusinessApiEnvTab from '../components/business/BusinessApiEnvTab'
 
 type Business = {
   id: string
@@ -82,6 +84,30 @@ export default function BusinessDetailPage() {
               initialToken={business.webhookToken}
             />
             <BusinessWhatsappConfigs businessId={business.id} />
+          </div>
+        </Tab>
+
+        <Tab key="apis" title="APIS">
+          <div className="space-y-4">
+            <SubTabs
+              aria-label="Ambiente de API"
+              variant="light"
+              color="warning"
+              classNames={{
+                tabList: 'gap-4 border-b border-gray-200',
+                tab: 'text-sm font-medium',
+                tabContent: 'group-data-[selected=true]:text-orange-600 group-data-[selected=true]:border-orange-500',
+                panel: 'mt-4',
+              }}
+            >
+              <SubTab key="demo" title="DEMO">
+                <BusinessApiEnvTab businessId={business.id} environment="DEV" />
+              </SubTab>
+
+              <SubTab key="prod" title="PRODUCCIÓN">
+                <BusinessApiEnvTab businessId={business.id} environment="PROD" />
+              </SubTab>
+            </SubTabs>
           </div>
         </Tab>
 
