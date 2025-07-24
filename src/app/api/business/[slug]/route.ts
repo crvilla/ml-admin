@@ -87,7 +87,11 @@ export async function POST(req: NextRequest) {
   const segments = url.pathname.split('/')
   const slug = segments[segments.length - 1]
 
+  console.log('[API CALL] URL completa:', req.url)
+  console.log('[API CALL] Slug extraído:', slug)
+
   if (!slug) {
+    console.warn('[VALIDATION ERROR] Slug requerido')
     return new NextResponse('Slug requerido', { status: 400 })
   }
 
@@ -95,12 +99,16 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { apiKeyPrivate } = body
 
+    console.log('[REQUEST BODY]', body)
+
     if (!apiKeyPrivate || typeof apiKeyPrivate !== 'string') {
+      console.warn('[VALIDATION ERROR] apiKeyPrivate inválido o ausente')
       return new NextResponse('apiKeyPrivate requerido y debe ser string', { status: 400 })
     }
 
     // Validación contra el token de desarrollo
     if (apiKeyPrivate === process.env.TOKEN_DEV) {
+      console.log('[TOKEN VALIDACIÓN] Token de desarrollo válido')
       return NextResponse.json({ valid: true })
     }
 
@@ -109,14 +117,19 @@ export async function POST(req: NextRequest) {
       select: { apiKeyPrivate: true },
     })
 
+    console.log('[BUSINESS FOUND]', business)
+
     if (!business) {
+      console.warn('[NOT FOUND] Negocio no encontrado para slug:', slug)
       return new NextResponse('Negocio no encontrado', { status: 404 })
     }
 
     const isValid = business.apiKeyPrivate === apiKeyPrivate
+    console.log('[VALIDACIÓN FINAL] ¿Es válido?', isValid)
+
     return NextResponse.json({ valid: isValid })
   } catch (error) {
-    console.error('[BUSINESS_VALIDATE_APIKEY]', error)
+    console.error('[BUSINESS_VALIDATE_APIKEY] Error:', error)
     return new NextResponse('Error al validar el apiKey', { status: 500 })
   }
 }

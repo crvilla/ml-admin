@@ -52,74 +52,77 @@ export async function POST(req: NextRequest) {
   const businessId = getBusinessIdFromUrl(req)
   const env = req.nextUrl.searchParams.get('env')?.toUpperCase() as 'DEV' | 'PROD'
 
+  console.log('[INFO] Incoming POST to /api/business/[slug] with env:', env)
+  console.log('[INFO] businessId extracted from URL:', businessId)
+
   if (!businessId) {
-    return NextResponse.json({ error: 'Business ID is required' }, { status: 400 })
+    return NextResponse.json({ error: 'No se encontró businessId en la URL' }, { status: 400 })
   }
 
-  if (!env || (env !== 'DEV' && env !== 'PROD')) {
-    return NextResponse.json({ error: 'Invalid or missing env param (DEV or PROD)' }, { status: 400 })
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { apiKeyPrivate: true, slug: true },
+  })
+
+  console.log('[LOOKUP] Business found:', business)
+
+  if (!business) {
+    return NextResponse.json({ error: 'Business not found' }, { status: 404 })
   }
 
-  try {
-    // Buscar la API de chats_api para ese entorno
-    const api = await prisma.apiIntegrationCatalog.findFirst({
-      where: {
-        name: 'chats_api',
-        type: env,
-      },
-    })
+  const catalog = await prisma.apiIntegrationCatalog.findFirst({
+    where: {
+      name: 'chats_api',
+      type: env,
+    },
+    select: { baseUrl: true },
+  })
 
-    if (!api) {
-      return NextResponse.json({ error: 'API catalog not found for chats_api in this environment' }, { status: 404 })
-    }
+  console.log('[LOOKUP] Catalog found:', catalog)
 
-    // Obtener el negocio y su apiKeyPrivate
-    const business = await prisma.business.findUnique({
-      where: { id: businessId },
-      select: { apiKeyPrivate: true },
-    })
-
-    if (!business) {
-      return NextResponse.json({ error: 'Business not found' }, { status: 404 })
-    }
-
-    // Llamar a la API externa para registrar el negocio
-    const res = await fetch(`${api.baseUrl}/api/business`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        token_private: business.apiKeyPrivate,
-      }),
-    })
-
-    if (!res.ok) {
-      const err = await res.json()
-      console.error('Error from chats_api:', err)
-      return NextResponse.json({ error: 'Failed to create business in chats_api' }, { status: 500 })
-    }
-
-    const data = await res.json()
-    const { businessId: externalId, token: publicApiKey } = data
-
-    // Crear integración en base de datos
-    const integration = await prisma.businessApiIntegration.create({
-      data: {
-        businessId,
-        apiId: api.id,
-        externalId,
-        publicApiKey,
-        status: 'INACTIVE',
-        botId: null,
-      },
-    })
-
-    return NextResponse.json({ message: 'API registrada con éxito', integration }, { status: 201 })
-  } catch (error) {
-    console.error('[POST /business-api/chats] Error:', error)
-    return NextResponse.json({ error: 'Error al registrar la API' }, { status: 500 })
+  if (!catalog) {
+    return NextResponse.json({ error: 'No se encontró la API en el catálogo' }, { status: 500 })
   }
+
+  const targetUrl = `${catalog.baseUrl}api/business`
+  console.log('[REQUEST] Calling targetUrl:', targetUrl)
+
+  const hostname = req.headers.get('host')
+  const isLocalhost = hostname?.includes('localhost')
+
+  const tokenPrivate = isLocalhost || env === 'PROD'
+    ? process.env.TOKEN_DEV
+    : business.apiKeyPrivate
+
+  console.log('[TOKEN] Using tokenPrivate:', tokenPrivate)
+  console.log('[SLUG] Using slug:', business.slug)
+
+  const bodyPayload = {
+    apiKeyPrivate: tokenPrivate,
+    slug: business.slug,
+  }
+
+  console.log('[BODY] Sending payload to targetUrl:', bodyPayload)
+
+  const res = await fetch(targetUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(bodyPayload),
+  })
+
+  const data = await res.json()
+
+  console.log('[RESPONSE] Response from chats_api:', {
+    status: res.status,
+    body: data,
+  })
+
+  if (!res.ok) {
+    return NextResponse.json(data, { status: res.status })
+  }
+
+  return NextResponse.json({ message: 'OK', data })
 }
-
 
