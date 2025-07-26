@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
   const businessId = getBusinessIdFromUrl(req)
   const env = req.nextUrl.searchParams.get('env')?.toUpperCase() as 'DEV' | 'PROD'
 
-  console.log('[INFO] Incoming POST to /api/business/[slug] with env:', env)
+  console.log('[INFO] Incoming POST to /api/business/name/[slug] with env:', env)
   console.log('[INFO] businessId extracted from URL:', businessId)
 
   if (!businessId) {

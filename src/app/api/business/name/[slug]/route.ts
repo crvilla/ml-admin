@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { BusinessStatus } from '@prisma/client/wasm'
 
-// GET /api/business/[slug]
+// GET /api/business/name/[slug]
 export async function GET(req: NextRequest) {
   const url = new URL(req.url)
   const segments = url.pathname.split('/')
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// PATCH /api/business/[slug]
+// PATCH /api/business/name/[slug]
 export async function PATCH(req: NextRequest) {
   const url = new URL(req.url)
   const segments = url.pathname.split('/')
@@ -81,7 +81,7 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-// POST /api/business/[slug]
+// POST /api/business/name/[slug]
 export async function POST(req: NextRequest) {
   const url = new URL(req.url)
   const segments = url.pathname.split('/')

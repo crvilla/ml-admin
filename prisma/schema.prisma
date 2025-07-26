@@ -63,19 +63,37 @@ model Business {
 }
 
 model BusinessApiIntegration {
-  id            String   @id @default(cuid())
-  businessId    String
-  business      Business @relation(fields: [businessId], references: [id])
-  apiId         String
-  api           ApiIntegrationCatalog @relation(fields: [apiId], references: [id], name: "ApiCatalogRelation")
-  externalId    String
-  publicApiKey  String               @unique
-  status        ApiIntegrationStatus @default(INACTIVE)
-  botId         String?   
-  bot           BusinessBot? @relation(fields: [botId], references: [id])
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String                @id @default(cuid())
+  businessId   String
+  business     Business              @relation(fields: [businessId], references: [id])
+  apiId        String
+  api          ApiIntegrationCatalog @relation(fields: [apiId], references: [id], name: "ApiCatalogRelation")
+  externalId   String
+  publicApiKey String                @unique
+  status       ApiIntegrationStatus  @default(INACTIVE)
+  botId        String?
+  bot          BusinessBot?          @relation(fields: [botId], references: [id])
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  // Relaciones adicionales
+  subApis BusinessSubApi[] @relation("SubApisFromChat")
+
   @@unique([businessId, apiId])
+}
+
+model BusinessSubApi {
+  id         String                 @id @default(cuid())
+  apiChatId  String // La API principal, de tipo chat
+  apiChat    BusinessApiIntegration @relation("SubApisFromChat", fields: [apiChatId], references: [id])
+  apiId      String // El catálogo de la sub API (Leads, Appointments, etc.)
+  api        ApiIntegrationCatalog  @relation(fields: [apiId], references: [id])
+  externalId String // ID con el que quedó registrado en el monolito externo
+  status     ApiIntegrationStatus   @default(INACTIVE)
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
+
+  @@unique([apiChatId, apiId]) // Evita duplicados para una subapi en una apiChat
 }
 
 model ApiIntegrationCatalog {
@@ -87,6 +105,7 @@ model ApiIntegrationCatalog {
   updatedAt DateTime        @updatedAt
 
   apiIntegrations BusinessApiIntegration[] @relation(name: "ApiCatalogRelation")
+  subApis         BusinessSubApi[]
 
   @@unique([name, type])
 }

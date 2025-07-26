@@ -28,7 +28,7 @@ export default function BusinessWhatsappConfigForm({ businessId, onCreated, onCa
   const handleSave = async () => {
     setSaving(true)
     try {
-      const res = await fetch(`/api/whatsapp/business/${businessId}`, {
+      const res = await fetch(`/api/business/whatsapp/business/${businessId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

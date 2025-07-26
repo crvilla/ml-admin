@@ -44,7 +44,7 @@ export default function BotConfigForm({ botId }: { botId: string }) {
         setWebhookTestURL(data.webhookTestURL || '')
         setWhatsappConfigId(data.whatsappConfig.id)
 
-        const wsRes = await fetch(`/api/whatsapp/business/${data.businessId}`)
+        const wsRes = await fetch(`/api/business/whatsapp/business/${data.businessId}`)
         if (!wsRes.ok) throw new Error('Error al cargar configuraciones de WhatsApp')
         const configs = await wsRes.json()
         setWsConfigs(configs)

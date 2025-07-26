@@ -19,7 +19,7 @@ export default function BusinessInfoForm({ slug, initialName, initialStatus, onU
     setSaving(true)
 
     try {
-      const res = await fetch(`/api/business/${slug}`, {
+      const res = await fetch(`/api/business/name/${slug}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, status }),

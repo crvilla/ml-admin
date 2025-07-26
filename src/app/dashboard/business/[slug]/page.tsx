@@ -26,7 +26,7 @@ export default function BusinessDetailPage() {
   useEffect(() => {
     const fetchBusiness = async () => {
       try {
-        const res = await fetch(`/api/business/${slug}`)
+        const res = await fetch(`/api/business/name/${slug}`)
         const data = await res.json()
 
         if (!res.ok) {

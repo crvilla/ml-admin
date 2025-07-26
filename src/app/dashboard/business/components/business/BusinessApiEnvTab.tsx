@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@heroui/react'
 import { BotMessageSquare, Settings2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 type Props = {
   businessId: string
@@ -20,11 +21,12 @@ export default function BusinessApiEnvTab({ businessId, environment }: Props) {
   const [checking, setChecking] = useState(true)
   const [exists, setExists] = useState<boolean | null>(null)
   const [integration, setIntegration] = useState<Integration | null>(null)
+  const router = useRouter();
 
   useEffect(() => {
     const checkIntegration = async () => {
       try {
-        const res = await fetch(`/api/business_api/chats/${businessId}?env=${environment}`)
+        const res = await fetch(`/api/business/api_integration/chats/business_id/${businessId}?env=${environment}`)
         const data = await res.json()
 
         if (res.ok) {
@@ -50,7 +52,7 @@ export default function BusinessApiEnvTab({ businessId, environment }: Props) {
     setLoading(true)
 
     try {
-      const activationRes = await fetch(`/api/business_api/chats/${businessId}?env=${environment}`, {
+      const activationRes = await fetch(`/api/business/api_integration/chats/business_id/${businessId}?env=${environment}`, {
         method: 'POST',
       })
 
@@ -63,7 +65,7 @@ export default function BusinessApiEnvTab({ businessId, environment }: Props) {
 
       const { businessId: externalId, token: publicApiKey, status } = activationData.data
 
-      const registerRes = await fetch(`/api/business_api/${businessId}`, {
+      const registerRes = await fetch(`/api/business/api_integration/business_id/${businessId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -109,7 +111,8 @@ export default function BusinessApiEnvTab({ businessId, environment }: Props) {
           {/* Botón de editar estilo Lukran */}
           <div className="flex justify-end">
             <button
-              onClick={() => window.location.href = `/api/business_api/chat_leat/${businessApiId}`}
+
+              onClick={() => router.push(`/dashboard/api_chat/${businessApiId}`)}
               className="flex items-center gap-1 text-sm text-white bg-orange-500 hover:bg-orange-600 rounded-full px-4 py-2 shadow transition"
             >
               <Settings2 className="w-4 h-4" />
