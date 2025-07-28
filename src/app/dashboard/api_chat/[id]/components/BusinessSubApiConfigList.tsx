@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Users, Bot, UserCog, AlertTriangle } from 'lucide-react'
+import { Bot, UserCog, AlertTriangle } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 type Props = {
