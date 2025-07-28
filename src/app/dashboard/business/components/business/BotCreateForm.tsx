@@ -47,7 +47,7 @@ export default function BotCreateForm({ businessId, onCreated, onCancel }: Props
     }
 
     try {
-      const res = await fetch(`/api/bot_business/${businessId}`, {
+      const res = await fetch(`/api/business/bot/bot_business/${businessId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -32,7 +32,7 @@ export default function BackToBusinessButton({ businessApiId }: { businessApiId:
         className="flex items-center gap-1 text-sm text-orange-600 hover:text-orange-800 font-semibold"
       >
         <ArrowLeft className="w-4 h-4" />
-        Volver a Negocios
+        Volver a Negocio
       </button>
     </div>
   )

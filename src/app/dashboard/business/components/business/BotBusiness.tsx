@@ -21,7 +21,8 @@ export default function BotBusiness({ businessId }: { businessId: string }) {
 
   const fetchBots = async () => {
     try {
-      const res = await fetch(`/api/bot_business/${businessId}`)
+  
+      const res = await fetch(`/api/business/bot/bot_business/${businessId}`)
       if (!res.ok) throw new Error(`Error ${res.status}`)
       const data = await res.json()
       setBots(data)
