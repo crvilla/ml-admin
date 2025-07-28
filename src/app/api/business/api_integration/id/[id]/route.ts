@@ -31,7 +31,13 @@ export async function GET(req: NextRequest) {
             id: true,
             apiId: true,
             externalId: true,
-            status: true
+            status: true,
+            api: {
+              select: {
+                name: true,
+                type: true,
+              }
+            }
           }
         }
       }

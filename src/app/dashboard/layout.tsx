@@ -10,6 +10,7 @@ import {
   BrainCog,
   LogOut
 } from 'lucide-react'
+import { Toaster } from 'react-hot-toast'
 
 const getPayloadFromToken = async () => {
   const cookieStore = await cookies()
@@ -73,7 +74,10 @@ export default async function DashboardLayout({
       </aside>
 
       {/* Contenido principal */}
-      <main className="flex-1 p-8">{children}</main>
+      <main className="flex-1 p-8">
+        <Toaster />
+        {children}
+      </main>
     </div>
   )
 }
