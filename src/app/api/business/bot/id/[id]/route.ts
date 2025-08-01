@@ -18,8 +18,31 @@ export async function GET(req: NextRequest) {
     const bot = await prisma.businessBot.findUnique({
       where: { id: botId },
       include: {
-        whatsappConfig: true, // Trae todos los campos
-        apiIntegrations: true, // Trae todas las integraciones relacionadas
+        whatsappConfig: true,
+        apiIntegrations: {
+          select: {
+            id: true,
+            status: true,
+            publicApiKey: true,
+            api: {
+              select: {
+                name: true,
+                type: true,
+              },
+            },
+            subApis: {
+              select: {
+                status: true,
+                api: {
+                  select: {
+                    name: true,
+                    type: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     })
 

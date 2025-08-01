@@ -23,3 +23,23 @@ export type WhatsappConfig = {
   environment: Environment
   testDestinationNumber: string | null
 }
+
+export type SubApi = {
+  status: string
+  api: {
+    name: string
+    type: string
+  }
+}
+
+export type ApiIntegration = {
+  id: string
+  status: string
+  publicApiKey: string
+  api: {
+    name: string
+    type: string
+  }
+  subApis: SubApi[]
+}
+
