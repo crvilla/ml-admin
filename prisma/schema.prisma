@@ -191,10 +191,10 @@ model BusinessBot {
   id               String                 @id @default(cuid())
   name             String
   description      String?
-  webhookURL       String                 // URL a la que se reenvía el mensaje (n8n)
-  webhookTestURL   String?                // Opcional, para pruebas
-  whatsappWebhookToken String?            // Token para validar la configuración de Meta
-  whatsappWebhookPath  String?            // Path usado por Meta para pegar el webhook (ej: /api/bot/webhook/bot_id/[id])
+  webhookURL       String
+  webhookTestURL   String?
+  whatsappWebhookToken String?
+  whatsappWebhookPath  String?
 
   businessId       String
   business         Business               @relation(fields: [businessId], references: [id])
@@ -202,6 +202,34 @@ model BusinessBot {
   whatsappConfig   BusinessWhatsappConfig @relation(fields: [whatsappConfigId], references: [id])
   apiIntegrations  BusinessApiIntegration[]
 
+  // Relación con eventos activos
+  activeEventTypes BusinessBotEventType[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model WebhookEventType {
+  id              String   @id @default(cuid())
+  type            String   // 'image', 'audio', etc.
+  label           String   // Título que se muestra al usuario final (ej. "Enviar imágenes")
+  webhookURL      String?  // URL del N8N si el bot está en TEST o PROD
+  webhookTestURL  String?  // URL del N8N si el bot está en DEV
+  active          Boolean  @default(false) // Solo si lo vamos a usar, por defecto inactivo
+  createdAt       DateTime @default(now())
+
+  bots            BusinessBotEventType[]
+}
+
+model BusinessBotEventType {
+  id        String         @id @default(cuid())
+  bot       BusinessBot    @relation(fields: [botId], references: [id])
+  botId     String
+
+  eventType WebhookEventType @relation(fields: [eventTypeId], references: [id])
+  eventTypeId String
+
+  createdAt DateTime @default(now())
+
+  @@unique([botId, eventTypeId])
 }

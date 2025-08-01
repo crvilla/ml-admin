@@ -162,6 +162,32 @@ for (const [slug, variables] of Object.entries(verticalVariablesBySlug)) {
   }
 }
 
+  const eventTypes = [
+    { type: 'image', label: 'Procesar imágenes' },
+    { type: 'audio', label: 'Procesar audios' },
+    { type: 'video', label: 'Procesar videos' },
+    { type: 'document', label: 'Procesar documentos' },
+    { type: 'sticker', label: 'Procesar stickers' },
+    { type: 'location', label: 'Procesar ubicaciones' },
+    { type: 'contacts', label: 'Procesar contactos' },
+    { type: 'interactive', label: 'Procesar interacciones (botón o lista)' }
+  ]
+
+  for (const eventType of eventTypes) {
+    const existing = await prisma.webhookEventType.findFirst({
+      where: { type: eventType.type }
+    })
+
+    if (existing) {
+      console.log(`⚠️  Ya existe el tipo: ${eventType.label}`)
+    } else {
+      await prisma.webhookEventType.create({
+        data: eventType
+      })
+      console.log(`✅ Tipo creado: ${eventType.label}`)
+    }
+  }
+
 main()
   .catch((e) => {
     console.error('❌ Error en el seed:', e)

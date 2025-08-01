@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(challenge, { status: 200 })
 }
 
-// POST: Recepción de mensajes entrantes
+// POST: Recepción de mensajes entrantes y reenvío a N8N
 export async function POST(req: NextRequest) {
   const botId = getIdFromUrl(req)
 
@@ -43,6 +43,9 @@ export async function POST(req: NextRequest) {
 
     const bot = await prisma.businessBot.findUnique({
       where: { id: botId },
+      include: {
+        whatsappConfig: true, // Incluye config para saber el environment
+      },
     })
 
     if (!bot) {
@@ -72,6 +75,33 @@ export async function POST(req: NextRequest) {
         console.log(`💬 Texto: ${message?.text?.body}`)
         console.log('📦 Payload completo:')
         console.dir(value, { depth: null })
+
+        // Determina a qué webhook enviar
+        const environment = bot.whatsappConfig.environment
+        const webhookUrl =
+          environment === 'DEV' ? bot.webhookTestURL : bot.webhookURL
+
+        if (!webhookUrl) {
+          console.warn('⚠️ No se encontró webhook configurado para el entorno.')
+          continue
+        }
+
+        // Envía el mensaje a N8N
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            botId: bot.id,
+            botName: bot.name,
+            contact,
+            message,
+            fullPayload: value,
+          }),
+        })
+
+        console.log(`📤 Reenviado a N8N (${environment}): ${webhookUrl}`)
       }
     }
 
