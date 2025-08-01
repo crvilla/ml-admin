@@ -4,14 +4,8 @@ import { useEffect, useState } from 'react'
 import { Card, CardHeader, CardBody } from '@heroui/react'
 import { PlusCircle } from 'lucide-react'
 import BusinessWhatsappConfigForm from './BusinessWhatsappConfigForm'
+import { WhatsappConfig } from '../../types/types'
 
-type WhatsappConfig = {
-  id: string
-  name: string
-  phone: string
-  status: string
-  createdAt: string
-}
 
 export default function BusinessWhatsappConfigs({ businessId }: { businessId: string }) {
   const [configs, setConfigs] = useState<WhatsappConfig[]>([])

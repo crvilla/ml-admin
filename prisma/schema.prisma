@@ -60,6 +60,9 @@ model Business {
   whatsappConfigs BusinessWhatsappConfig[] // ← relación uno-a-muchos
   apiIntegrations BusinessApiIntegration[]
   bots            BusinessBot[]
+  verticalId   String?
+  vertical     Vertical? @relation(fields: [verticalId], references: [id])
+  activeVariables BusinessActiveVariable[]
 }
 
 model BusinessApiIntegration {
@@ -129,6 +132,59 @@ model BusinessWhatsappConfig {
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
   bots                  BusinessBot[]
+}
+
+enum VariableType {
+  STRING
+  NUMBER
+  BOOLEAN
+  ENUM
+  DATE
+}
+
+model Vertical {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  label     String
+  variables VerticalVariable[]
+  businesses Business[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerticalVariable {
+  id         String       @id @default(cuid())
+  verticalId String
+  vertical   Vertical     @relation(fields: [verticalId], references: [id])
+
+  name       String       // Interno
+  slug       String       // Clave corta para usar en queries/chat
+  label      String       // Texto que se le muestra al cliente
+
+  type       VariableType
+  required   Boolean      @default(false)
+
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  businessActiveVariables BusinessActiveVariable[]
+
+  @@unique([verticalId, slug]) // Evita duplicados dentro de una vertical
+}
+
+model BusinessActiveVariable {
+  id                 String           @id @default(cuid())
+  businessId         String
+  business           Business         @relation(fields: [businessId], references: [id])
+  verticalVariableId String
+  verticalVariable   VerticalVariable @relation(fields: [verticalVariableId], references: [id])
+  apiFieldName       String           // Nombre como viene en la API del cliente (opcional)
+  isFilterable       Boolean          @default(true) // Útil si lo usarás para filtros en frontend o agentes
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@unique([businessId, verticalVariableId]) // Evita duplicadas
 }
 
 model BusinessBot {

@@ -9,14 +9,8 @@ import BusinessInfoForm from '../components/business/BusinessInfoForm'
 import BotBusiness from '../components/business/BotBusiness'
 import BusinessWhatsappConfigs from '../components/business/BusinessWhatsappConfigs'
 import BusinessApiEnvTab from '../components/business/BusinessApiEnvTab'
+import { Business } from '../types/types'
 
-type Business = {
-  id: string
-  name: string
-  slug: string
-  status: string
-  webhookToken: string | null
-}
 
 export default function BusinessDetailPage() {
   const { slug } = useParams()

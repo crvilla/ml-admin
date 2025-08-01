@@ -2,16 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { WhatsappConfig } from '../../types/types'
 
 type Props = {
   businessId: string
   onCreated: () => void
   onCancel: () => void
-}
-
-type WhatsappConfig = {
-  id: string
-  name: string
 }
 
 export default function BotCreateForm({ businessId, onCreated, onCancel }: Props) {
@@ -54,7 +50,7 @@ export default function BotCreateForm({ businessId, onCreated, onCancel }: Props
           name,
           description,
           webhookURL,
-          webhookTestURL, // ← lo enviamos al backend
+          webhookTestURL,
           whatsappConfigId,
         }),
       })

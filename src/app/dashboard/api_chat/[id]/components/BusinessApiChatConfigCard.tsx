@@ -3,17 +3,9 @@
 import { BotMessageSquare } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
-
-type Props = {
-  businessApiId: string
-}
+import { Bot, Props } from '../../types/types'
 
 const STATUS_OPTIONS = ['ACTIVE', 'INACTIVE', 'DISABLED']
-
-type Bot = {
-  id: string
-  name: string
-}
 
 export default function BusinessApiChatConfigCard({ businessApiId }: Props) {
   const [publicApiKey, setPublicApiKey] = useState('')

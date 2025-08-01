@@ -3,7 +3,7 @@
 import { BotMessageSquare, Settings2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
-type Props = {
+export type Props = {
   integration: {
     id: string
     publicApiKey: string

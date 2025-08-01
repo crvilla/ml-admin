@@ -1,24 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-
-type Bot = {
-  id: string
-  name: string
-  description: string | null
-  webhookURL: string
-  webhookTestURL?: string | null
-  whatsappConfig: {
-    id: string
-    name: string
-  }
-  businessId: string
-}
-
-type WhatsappConfig = {
-  id: string
-  name: string
-}
+import { Bot, WhatsappConfig } from '../../types/types'
 
 export default function BotConfigForm({ botId }: { botId: string }) {
   const [bot, setBot] = useState<Bot | null>(null)
@@ -34,7 +17,7 @@ export default function BotConfigForm({ botId }: { botId: string }) {
   useEffect(() => {
     const fetchBot = async () => {
       try {
-        const res = await fetch(`/api/bot/${botId}`)
+        const res = await fetch(`/api/business/bot/id/${botId}`)
         if (!res.ok) throw new Error('Error al cargar bot')
         const data = await res.json()
         setBot(data)
@@ -61,7 +44,7 @@ export default function BotConfigForm({ botId }: { botId: string }) {
   const handleUpdate = async () => {
     setSaving(true)
     try {
-      const res = await fetch(`/api/bot/${botId}`, {
+      const res = await fetch(`/api/business/bot/id/${botId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

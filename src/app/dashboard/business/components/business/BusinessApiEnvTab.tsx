@@ -5,16 +5,11 @@ import { Button } from '@heroui/react'
 import { BotMessageSquare } from 'lucide-react'
 import ApiChatCard from './ApiChatCard'
 import toast from 'react-hot-toast'
+import { Integration } from '../../types/types'
 
 type Props = {
   businessId: string
   environment: 'DEV' | 'PROD'
-}
-interface Integration {
-  id: string
-  publicApiKey: string
-  status: string
-  bot: boolean
 }
 
 export default function BusinessApiEnvTab({ businessId, environment }: Props) {

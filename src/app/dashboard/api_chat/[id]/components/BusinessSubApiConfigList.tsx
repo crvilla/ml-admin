@@ -3,21 +3,8 @@
 import { useEffect, useState } from 'react'
 import { Bot, UserCog, AlertTriangle } from 'lucide-react'
 import toast from 'react-hot-toast'
-
-type Props = {
-  businessApiId: string
-}
-
-type SubApi = {
-  id: string
-  apiId: string
-  externalId: string
-  status: 'ACTIVE' | 'INACTIVE' | 'DISABLED'
-  api: {
-    name: string
-    type: 'DEV' | 'PROD'
-  }
-}
+import Link from 'next/link'
+import { Props, SubApi } from '../../types/types'
 
 const STATUS_OPTIONS = ['ACTIVE', 'INACTIVE', 'DISABLED']
 
@@ -139,22 +126,22 @@ export default function BusinessSubApiConfigList({ businessApiId }: Props) {
 
               {isLead && (
                 <div className="border border-orange-200 rounded-lg p-3 mt-2 space-y-3 text-center">
-                  <p className="text-sm text-orange-800 flex items-center justify-center gap-2">
+                  <p className="text-sm text-orange-800 flex flex-col sm:flex-row items-center justify-center gap-2 text-center">
                     <AlertTriangle size={16} className="text-orange-500" />
-                    Esta es la <strong>API principal de Leads</strong> del negocio. Es necesario
-                    registrar al menos <strong>un usuario super admin</strong> para gestionar bots,
-                    leads, reportes y más funciones avanzadas.
+                    <span>
+                      Esta es la <strong>API principal de Leads</strong> del negocio. Es necesario
+                      registrar al menos <strong>un usuario super admin</strong> para gestionar bots,
+                      leads, reportes y más funciones avanzadas.
+                    </span>
                   </p>
-                  <button
-                    onClick={() => console.log('Ir a gestión de usuarios')}
+                  <Link
+                    href={`/dashboard/api_lead/users/id/${subApi.id}`}
                     className="inline-flex items-center justify-center gap-2 text-sm font-medium bg-orange-500 text-white px-4 py-2 rounded-xl hover:bg-orange-600 transition"
                   >
                     <UserCog size={18} /> Administrar usuarios de esta API
-                  </button>
+                  </Link>
                 </div>
               )}
-
-
             </div>
           )
         })

@@ -1,19 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-
-type Environment = 'DEV' | 'TEST' | 'PROD'
-
-type WhatsappConfig = {
-  id: string
-  name: string
-  wabaId: string
-  phoneNumberId: string
-  senderPhoneNumber: string
-  accessToken: string
-  environment: Environment
-  testDestinationNumber: string | null
-}
+import { Environment, WhatsappConfig } from '../../types/types'
 
 export default function WhatsappConfigForm({ botId }: { botId: string }) {
   const [config, setConfig] = useState<WhatsappConfig | null>(null)
@@ -23,7 +11,7 @@ export default function WhatsappConfigForm({ botId }: { botId: string }) {
   useEffect(() => {
     const fetchBotWithConfig = async () => {
       try {
-        const res = await fetch(`/api/bot/${botId}`)
+        const res = await fetch(`/api/business/bot/id/${botId}`)
         if (!res.ok) throw new Error('No se pudo cargar el bot')
         const data = await res.json()
 
@@ -50,7 +38,7 @@ export default function WhatsappConfigForm({ botId }: { botId: string }) {
     setSaving(true)
 
     try {
-      const res = await fetch(`/api/whatsapp/config/${config.id}`, {
+      const res = await fetch(`/api/business/whatsapp/config/${config.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
