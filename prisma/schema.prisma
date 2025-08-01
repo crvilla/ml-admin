@@ -188,15 +188,18 @@ model BusinessActiveVariable {
 }
 
 model BusinessBot {
-  id               String                   @id @default(cuid())
+  id               String                 @id @default(cuid())
   name             String
   description      String?
-  webhookURL       String
-  webhookTestURL   String?
+  webhookURL       String                 // URL a la que se reenvía el mensaje (n8n)
+  webhookTestURL   String?                // Opcional, para pruebas
+  whatsappWebhookToken String?            // Token para validar la configuración de Meta
+  whatsappWebhookPath  String?            // Path usado por Meta para pegar el webhook (ej: /api/bot/webhook/bot_id/[id])
+
   businessId       String
-  business         Business                 @relation(fields: [businessId], references: [id])
+  business         Business               @relation(fields: [businessId], references: [id])
   whatsappConfigId String
-  whatsappConfig   BusinessWhatsappConfig   @relation(fields: [whatsappConfigId], references: [id])
+  whatsappConfig   BusinessWhatsappConfig @relation(fields: [whatsappConfigId], references: [id])
   apiIntegrations  BusinessApiIntegration[]
 
   createdAt DateTime @default(now())

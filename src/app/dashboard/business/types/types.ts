@@ -29,3 +29,23 @@ export type WhatsappConfig = {
   status: string
   createdAt: string
 }
+
+export interface Bot {
+  id: string
+  name: string
+  description?: string
+  webhookURL: string
+  webhookTestURL?: string
+  whatsappWebhookToken?: string
+  whatsappWebhookPath?: string
+  businessId: string
+  whatsappConfigId: string
+  whatsappConfig: {
+    id: string
+    name: string
+  }
+  apiIntegrations: unknown[] // Puedes tiparlo mejor si lo necesitas
+
+  createdAt: string
+  updatedAt: string
+}

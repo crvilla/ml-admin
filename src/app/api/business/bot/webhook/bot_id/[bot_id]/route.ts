@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getIdFromUrl } from '@/lib/helpers'
 
 // GET: Validación del webhook de WhatsApp
 export async function GET(req: NextRequest) {
-  const url = new URL(req.url)
-  const segments = url.pathname.split('/')
-  const slug = segments[segments.length - 1]
+  const botId = getIdFromUrl(req)
+
+  if (!botId) {
+    return new NextResponse('ID de bot inválido', { status: 400 })
+  }
 
   const searchParams = req.nextUrl.searchParams
   const mode = searchParams.get('hub.mode')
@@ -16,11 +19,11 @@ export async function GET(req: NextRequest) {
     return new NextResponse('Faltan parámetros', { status: 400 })
   }
 
-  const business = await prisma.business.findUnique({
-    where: { slug },
+  const bot = await prisma.businessBot.findUnique({
+    where: { id: botId },
   })
 
-  if (!business || business.webhookToken !== token) {
+  if (!bot || bot.whatsappWebhookToken !== token) {
     return new NextResponse('Token inválido', { status: 403 })
   }
 
@@ -29,19 +32,21 @@ export async function GET(req: NextRequest) {
 
 // POST: Recepción de mensajes entrantes
 export async function POST(req: NextRequest) {
-  const url = new URL(req.url)
-  const segments = url.pathname.split('/')
-  const slug = segments[segments.length - 1]
+  const botId = getIdFromUrl(req)
 
   try {
+    if (!botId) {
+      return new NextResponse('ID de bot inválido', { status: 400 })
+    }
+
     const body = await req.json()
 
-    const business = await prisma.business.findUnique({
-      where: { slug },
+    const bot = await prisma.businessBot.findUnique({
+      where: { id: botId },
     })
 
-    if (!business || !business.webhookToken) {
-      return new NextResponse('Business no encontrado o sin token', { status: 404 })
+    if (!bot) {
+      return new NextResponse('Bot no encontrado', { status: 404 })
     }
 
     if (body.object !== 'whatsapp_business_account') {
@@ -60,7 +65,7 @@ export async function POST(req: NextRequest) {
         const contact = value.contacts?.[0]
         const message = value.messages?.[0]
 
-        console.log(`📩 Mensaje recibido para el cliente: ${business.name}`)
+        console.log(`📩 Mensaje recibido para el bot: ${bot.name}`)
         console.log(`👤 Nombre: ${contact?.profile?.name || 'Desconocido'}`)
         console.log(`📱 Teléfono: ${contact?.wa_id || message?.from}`)
         console.log(`🕒 Timestamp: ${message?.timestamp}`)
