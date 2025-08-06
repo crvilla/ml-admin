@@ -1,6 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getIdFromUrl } from '@/lib/helpers'
+import { WhatsAppEventProcessor } from '@/app/lib/WhatsAppEventProcessor'
+import { HandlerWSResponse } from '@/types/handlers'
+
+function isHandlerWSResponse(obj: unknown): obj is HandlerWSResponse {
+  if (
+    typeof obj !== 'object' ||
+    obj === null
+  ) return false
+
+  const maybe = obj as Partial<HandlerWSResponse>
+
+  return (
+    typeof maybe.messageResponse === 'string' &&
+    typeof maybe.type === 'string' &&
+    typeof maybe.response === 'object' &&
+    maybe.response !== null &&
+    typeof maybe.response?.phone === 'string'
+  )
+}
 
 // GET: Validación del webhook de WhatsApp
 export async function GET(req: NextRequest) {
@@ -41,19 +60,29 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json()
 
+    if (body.object !== 'whatsapp_business_account') {
+      return new NextResponse('No es un evento de WhatsApp', { status: 400 })
+    }
+
     const bot = await prisma.businessBot.findUnique({
       where: { id: botId },
       include: {
-        whatsappConfig: true, // Incluye config para saber el environment
+        whatsappConfig: true,
+        apiIntegrations: {
+          include: {
+            api: true,
+            subApis: {
+              include: {
+                api: true,
+              },
+            },
+          },
+        },
       },
     })
 
     if (!bot) {
       return new NextResponse('Bot no encontrado', { status: 404 })
-    }
-
-    if (body.object !== 'whatsapp_business_account') {
-      return new NextResponse('No es un evento de WhatsApp', { status: 400 })
     }
 
     const entries = body.entry || []
@@ -65,43 +94,27 @@ export async function POST(req: NextRequest) {
         if (change.field !== 'messages') continue
 
         const value = change.value
-        const contact = value.contacts?.[0]
-        const message = value.messages?.[0]
 
-        console.log(`📩 Mensaje recibido para el bot: ${bot.name}`)
-        console.log(`👤 Nombre: ${contact?.profile?.name || 'Desconocido'}`)
-        console.log(`📱 Teléfono: ${contact?.wa_id || message?.from}`)
-        console.log(`🕒 Timestamp: ${message?.timestamp}`)
-        console.log(`💬 Texto: ${message?.text?.body}`)
-        console.log('📦 Payload completo:')
-        console.dir(value, { depth: null })
+        const processor = new WhatsAppEventProcessor(bot, value)
+        const result = await processor.process()
 
-        // Determina a qué webhook enviar
-        const environment = bot.whatsappConfig.environment
-        const webhookUrl =
-          environment === 'DEV' ? bot.webhookTestURL : bot.webhookURL
+        console.log('✅ Resultado del procesamiento del mensaje:', result)
 
-        if (!webhookUrl) {
-          console.warn('⚠️ No se encontró webhook configurado para el entorno.')
-          continue
+        if (Array.isArray(result)) {
+          for (const r of result) {
+            if (isHandlerWSResponse(r)) {
+              console.log(`📤 Tipo: ${r.type}, Tel: ${r.response.phone}, Texto: ${r.messageResponse}`)
+            } else {
+              console.warn('⚠️ Respuesta inválida de N8N (array):', r)
+            }
+          }
+        } else {
+          if (isHandlerWSResponse(result)) {
+            console.log(`📤 Tipo: ${result.type}, Tel: ${result.response.phone}, Texto: ${result.messageResponse}`)
+          } else {
+            console.warn('⚠️ Respuesta inválida de N8N (objeto):', result)
+          }
         }
-
-        // Envía el mensaje a N8N
-        await fetch(webhookUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            botId: bot.id,
-            botName: bot.name,
-            contact,
-            message,
-            fullPayload: value,
-          }),
-        })
-
-        console.log(`📤 Reenviado a N8N (${environment}): ${webhookUrl}`)
       }
     }
 
@@ -111,3 +124,4 @@ export async function POST(req: NextRequest) {
     return new NextResponse('Error interno del servidor', { status: 500 })
   }
 }
+

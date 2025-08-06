@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
     const config = await prisma.businessWhatsappConfig.findFirst({
       where: { businessId },
     })
+    
 
     if (!config) {
       return NextResponse.json({ error: 'No WhatsApp config found for this business' }, { status: 404 })
