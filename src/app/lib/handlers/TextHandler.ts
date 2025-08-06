@@ -4,12 +4,19 @@ import { sendWhatsAppMessage } from '../utils/sendWhatsAppMessage'
 import { BaseHandler } from './BaseHandler'
 import { HandlerResponse } from '@/types/handlers'
 
+interface BotWithWhatsappConfig {
+  whatsappConfig?: {
+    senderPhoneNumber?: string
+    environment: 'DEV' | 'PROD'
+  }
+}
+
 export class TextHandler extends BaseHandler {
   async handle(): Promise<HandlerResponse> {
     const waId = this.contact.wa_id
-    const botPhone = this.bot.whatsappConfig?.senderPhoneNumber
+    const bot = this.bot as BotWithWhatsappConfig
+    const botPhone = bot.whatsappConfig?.senderPhoneNumber
 
-    // 🛑 Evitar loops: si el bot se escribe a sí mismo, ignorar
     if (waId === botPhone) {
       console.log('🌀 Ignorado: mensaje generado por el propio bot')
       return {
@@ -44,7 +51,7 @@ export class TextHandler extends BaseHandler {
       message: getThinkingMessage(),
     })
 
-    const env = this.bot.whatsappConfig.environment
+    const env = bot.whatsappConfig?.environment || 'PROD'
     const url = env === 'DEV' ? this.bot.webhookTestURL : this.bot.webhookURL
 
     if (!url) {
