@@ -70,34 +70,60 @@ export class TextHandler extends BaseHandler {
       url_lm_lead: urlLmLead,
     }
 
-    let response
-    try {
-      response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payloadToSend),
-      })
-    } catch (error) {
-      console.error('❌ Error haciendo fetch a N8N:', error)
+    let response: Response | undefined
+    let attempt = 0
+    const maxAttempts = 2
+    let success = false
+
+    while (attempt < maxAttempts && !success) {
+      try {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payloadToSend),
+        })
+
+        if (response.ok) {
+          success = true
+        } else {
+          console.warn(`⚠️ Webhook respondió con error (status ${response.status}), intento ${attempt + 1}`)
+        }
+      } catch (error) {
+        console.error(`❌ Error al intentar fetch a N8N (intento ${attempt + 1}):`, error)
+      }
+
+      attempt++
+    }
+
+    if (!success) {
       unmarkProcessing(waId)
+
+      const errorMessage = `🚨 En este momento estamos teniendo problemas para procesar tu mensaje. Puedes intentar de nuevo más tarde o escribirle directamente a un asesor.`
+
+      await sendWhatsAppMessage({
+        botId: this.bot.id,
+        phone: waId,
+        message: errorMessage,
+      })
+
       return {
-        messageResponse: 'Error conectando con el webhook.',
+        messageResponse: errorMessage,
         type: 'text',
         response: {
           phone: waId,
           name: this.contact.profile?.name ?? '',
-          data: { error: String(error) },
+          data: { error: 'No se pudo contactar con el webhook después de varios intentos.' },
         },
       }
     }
-
-    const raw = await response.text()
-    const contentType = response.headers.get('content-type')
+    const safeResponse = response as Response
+    const raw = await safeResponse.text()
+    const contentType = safeResponse.headers.get('content-type')
     console.log('📩 Respuesta RAW de N8N:', raw)
     console.log('🧾 Content-Type de N8N:', contentType)
-    console.log('📦 Status de N8N:', response.status)
+    console.log('📦 Status de N8N:', safeResponse.status)
 
     let data: HandlerResponse | null = null
     try {
