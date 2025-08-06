@@ -6,6 +6,8 @@ import { Bot, MessageCircle, PlugZap } from 'lucide-react'
 import BotConfigForm from './BotConfigForm'
 import WhatsappConfigForm from './WhatsappConfigForm'
 import ApiConfigForm from './ApiConfigForm'
+import ChatBotWrapper from './ChatBotWrapper'
+
 
 export default function BotDetailPageLayout() {
   const params = useParams()
@@ -15,7 +17,7 @@ export default function BotDetailPageLayout() {
     <div className="flex h-[calc(100vh-4rem)] bg-gray-100">
       {/* Lado izquierdo: Chat */}
       <div className="w-1/2 border-r border-gray-200 px-4 py-3 flex items-center justify-center bg-gray-50">
-        <h1 className="text-2xl font-bold text-orange-600">AQUÍ EL CHAT</h1>
+        <ChatBotWrapper botId={botId} />
       </div>
 
       {/* Lado derecho: Configuración */}

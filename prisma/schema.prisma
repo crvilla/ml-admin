@@ -191,6 +191,7 @@ model BusinessBot {
   id               String                 @id @default(cuid())
   name             String
   description      String?
+  simulatedPhone   String?
   webhookURL       String
   webhookTestURL   String?
   whatsappWebhookToken String?

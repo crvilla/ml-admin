@@ -8,6 +8,7 @@ export type Bot = {
     id: string
     name: string
   }
+  simulatedPhone?: string 
   businessId: string
 }
 
@@ -42,4 +43,19 @@ export type ApiIntegration = {
   }
   subApis: SubApi[]
 }
+
+export type Message = {
+  sender: 'user' | 'bot'
+  text: string
+}
+
+export type ApiResponse = {
+  messages: {
+    id: string
+    content: string
+    createdAt: string
+    sender: string
+  }[]
+}
+
 

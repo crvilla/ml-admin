@@ -21,6 +21,8 @@ export default function BotConfigForm({ botId }: { botId: string }) {
   const [whatsappWebhookToken, setWhatsappWebhookToken] = useState('')
   const [whatsappWebhookPath, setWhatsappWebhookPath] = useState('')
   const [wsConfigs, setWsConfigs] = useState<WhatsappConfig[]>([])
+  const [simulatedPhone, setSimulatedPhone] = useState('')
+
 
   useEffect(() => {
     const fetchBot = async () => {
@@ -29,6 +31,7 @@ export default function BotConfigForm({ botId }: { botId: string }) {
         if (!res.ok) throw new Error('Error al cargar bot')
         const data = await res.json()
         setBot(data)
+        setSimulatedPhone(data.simulatedPhone || '')
         setName(data.name)
         setDescription(data.description || '')
         setWebhookURL(data.webhookURL)
@@ -64,6 +67,7 @@ export default function BotConfigForm({ botId }: { botId: string }) {
           whatsappConfigId,
           whatsappWebhookToken,
           whatsappWebhookPath,
+          simulatedPhone
         }),
       })
 
@@ -97,6 +101,18 @@ export default function BotConfigForm({ botId }: { botId: string }) {
         <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
         <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="w-full border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-2 text-sm shadow-sm transition resize-none" />
       </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Número simulado</label>
+        <input
+          type="text"
+          value={simulatedPhone}
+          onChange={(e) => setSimulatedPhone(e.target.value)}
+          placeholder="+573001234567"
+          className="w-full border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-2 text-sm shadow-sm transition"
+        />
+      </div>
+
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Webhook URL</label>
