@@ -7,6 +7,21 @@ import { HandlerResponse } from '@/types/handlers'
 export class TextHandler extends BaseHandler {
   async handle(): Promise<HandlerResponse> {
     const waId = this.contact.wa_id
+    const botPhone = this.bot.whatsappConfig?.senderPhoneNumber
+
+    // 🛑 Evitar loops: si el bot se escribe a sí mismo, ignorar
+    if (waId === botPhone) {
+      console.log('🌀 Ignorado: mensaje generado por el propio bot')
+      return {
+        messageResponse: 'Ignorado mensaje generado por el bot.',
+        type: 'text',
+        response: {
+          phone: waId,
+          name: '',
+          data: {},
+        },
+      }
+    }
 
     if (isProcessing(waId)) {
       console.log('🚫 Ignorando mensaje porque hay uno en proceso')

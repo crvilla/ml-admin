@@ -1,6 +1,6 @@
 import { HandlerContext } from './BaseHandler'
 import { TextHandler } from './TextHandler'
-import { MediaHandler } from './MediaHandler'
+import { GenericHandler } from './GenericHandler'
 import { BaseHandler } from './BaseHandler'
 
 export function handlerFactory(type: string, options: HandlerContext): BaseHandler {
@@ -8,5 +8,5 @@ export function handlerFactory(type: string, options: HandlerContext): BaseHandl
     return new TextHandler(options)
   }
 
-  return new MediaHandler(options)
+  return new GenericHandler(options)
 }
