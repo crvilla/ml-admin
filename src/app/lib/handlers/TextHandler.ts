@@ -1,20 +1,14 @@
+import { BotWithWhatsappConfig } from '@/types/whatsapp'
 import { isProcessing, markProcessing, unmarkProcessing } from '../utils/messageLocks'
 import { getThinkingMessage } from '../utils/messageUtils.ts'
 import { sendWhatsAppMessage } from '../utils/sendWhatsAppMessage'
 import { BaseHandler } from './BaseHandler'
 import { HandlerResponse } from '@/types/handlers'
 
-interface BotWithWhatsappConfig {
-  whatsappConfig?: {
-    senderPhoneNumber?: string
-    environment: 'DEV' | 'PROD'
-  }
-}
-
 export class TextHandler extends BaseHandler {
   async handle(): Promise<HandlerResponse> {
     const waId = this.contact.wa_id
-    const bot = this.bot as BotWithWhatsappConfig
+    const bot = this.bot as unknown as BotWithWhatsappConfig
     const botPhone = bot.whatsappConfig?.senderPhoneNumber
 
     if (waId === botPhone) {
@@ -68,13 +62,13 @@ export class TextHandler extends BaseHandler {
       }
     }
 
-    const integration = this.bot.apiIntegrations[0]
+    const integration = bot.apiIntegrations[0]
     const xBusinessToken = integration?.publicApiKey ?? ''
     const urlLmBussines = integration?.api?.baseUrl ?? ''
 
     let urlLmLead = ''
     for (const subApi of integration?.subApis ?? []) {
-      if (subApi.api?.name === 'leads_api') {
+      if (subApi.api?.name === 'leads_api' && subApi.api.baseUrl) {
         urlLmLead = subApi.api.baseUrl
         break
       }
@@ -82,8 +76,8 @@ export class TextHandler extends BaseHandler {
 
     const payloadToSend = {
       type: 'text',
-      botId: this.bot.id,
-      botName: this.bot.name,
+      botId: bot.id,
+      botName: bot.name,
       contact: this.contact,
       message: this.message,
       fullPayload: this.value,
@@ -125,9 +119,9 @@ export class TextHandler extends BaseHandler {
       const errorMessage = `🚨 En este momento estamos teniendo problemas para procesar tu mensaje. Puedes intentar de nuevo más tarde o escribirle directamente a un asesor.`
 
       await sendWhatsAppMessage({
-        botId: this.bot.id,
+        botId: bot.id,
         phone: waId,
-        message: errorMessage,
+        message: getThinkingMessage(),
       })
 
       return {

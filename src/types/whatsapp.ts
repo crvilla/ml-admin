@@ -30,3 +30,26 @@ export interface WhatsAppPayload {
   contacts: WhatsAppContact[]
   messages: WhatsAppMessage[]
 }
+
+export interface BotWithWhatsappConfig {
+  id: string
+  name: string
+  webhookURL: string
+  webhookTestURL?: string
+  whatsappConfig?: {
+    senderPhoneNumber?: string
+    environment: 'DEV' | 'PROD'
+  }
+  apiIntegrations: {
+    publicApiKey?: string
+    api?: {
+      baseUrl?: string
+    }
+    subApis?: {
+      api?: {
+        name?: string
+        baseUrl?: string
+      }
+    }[]
+  }[]
+}
