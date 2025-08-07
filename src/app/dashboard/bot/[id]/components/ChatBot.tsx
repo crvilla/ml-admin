@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Send, RefreshCcw } from 'lucide-react'
 import { Message } from '@/app/dashboard/bot/types/types'
 import { useChatMessages } from '@/hooks/useChatMessages'
@@ -10,26 +10,39 @@ export default function ChatBot({ botId }: { botId: string }) {
   const [input, setInput] = useState('')
   const [isSending, setIsSending] = useState(false)
 
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
   const handleSend = async () => {
-    if (!input.trim()) return
-    setIsSending(true)
+      if (!input.trim()) return
+      setIsSending(true)
 
-    const userMessage: Message = { sender: 'user', text: input.trim() }
-    setMessages(prev => [...prev, userMessage])
-    const userText = input.trim()
-    setInput('')
+      const userText = input.trim()
+      setInput('')
 
-    console.log('📤 Mensaje enviado (simulado):', { botId, message: userText })
-
-    setTimeout(() => {
-      const botReply: Message = {
-        sender: 'bot',
-        text: 'Simulación de respuesta de Lukran 💡',
+      const userMessage: Message = {
+        id: Date.now(), // temporal
+        sender: 'user',
+        text: userText,
       }
-      setMessages(prev => [...prev, botReply])
-      setIsSending(false)
-    }, 1000)
-  }
+
+      setMessages(prev => [...prev, userMessage])
+      console.log('📤 Mensaje enviado (simulado):', { botId, message: userText })
+
+      setTimeout(() => {
+        const botReply: Message = {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: 'Simulación de respuesta de Lukran 💡',
+        }
+        setMessages(prev => [...prev, botReply])
+        setIsSending(false)
+      }, 1000)
+    }
+
 
   return (
     <div className="flex flex-col w-full h-full">
@@ -50,22 +63,27 @@ export default function ChatBot({ botId }: { botId: string }) {
         {loading ? (
           <p className="text-sm text-gray-600">Cargando historial...</p>
         ) : (
-          messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[75%] px-4 py-2 rounded-2xl shadow-sm ${
-                  msg.sender === 'user'
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-white text-gray-800 border'
-                }`}
-              >
-                {msg.text}
-              </div>
-            </div>
-          ))
+          <>
+            {[...messages]
+              .sort((a, b) => a.id - b.id)
+              .map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[75%] px-4 py-2 rounded-2xl shadow-sm ${
+                      msg.sender === 'user'
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-white text-gray-800 border'
+                    }`}
+                  >
+                    {msg.text}
+                  </div>
+                </div>
+            ))}
+            <div ref={bottomRef} />
+          </>
         )}
       </div>
 

@@ -1,37 +1,44 @@
-import { useEffect, useState, useCallback } from 'react'
-import { ApiResponse, Message } from '@/app/dashboard/bot/types/types'
+import { useEffect, useState } from 'react'
+import { Message } from '@/app/dashboard/bot/types/types'
+
+type ApiMessage = {
+  id: string | number
+  content: string
+  sender: 'USER' | 'AI'
+}
 
 export function useChatMessages(botId: string) {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
 
-  const fetchMessages = useCallback(async () => {
+  const fetchMessages = async () => {
+    setLoading(true)
     try {
-      setLoading(true)
       const res = await fetch(`/api/business/bot/get_messages/bot_id/${botId}`)
-      if (!res.ok) throw new Error('No se pudo obtener historial')
+      const data = await res.json()
 
-      const data: ApiResponse = await res.json()
-      const mapped: Message[] = (data.messages || []).reverse().map((m) => ({
-        sender: m.sender === 'AI' ? 'bot' : 'user',
-        text: m.content,
+      const parsed: Message[] = (data.messages as ApiMessage[]).map((msg) => ({
+        id: Number(msg.id),
+        sender: msg.sender === 'USER' ? 'user' : 'bot',
+        text: msg.content,
       }))
 
-      setMessages(mapped.length > 0 ? mapped : [{
-        sender: 'bot',
-        text: '¡Hola! Soy Lukran, ¿en qué puedo ayudarte hoy?',
-      }])
-    } catch (err) {
-      console.error('[useChatMessages] Error al cargar mensajes:', err)
-      setMessages([{ sender: 'bot', text: '¡Hola! Soy Lukran, ¿en qué puedo ayudarte hoy?' }])
+      setMessages(parsed)
+    } catch (error) {
+      console.error('Error al obtener mensajes:', error)
     } finally {
       setLoading(false)
     }
-  }, [botId])
+  }
 
   useEffect(() => {
     fetchMessages()
-  }, [fetchMessages])
+  }, [botId])
 
-  return { messages, setMessages, loading, refetch: fetchMessages }
+  return {
+    messages,
+    setMessages,
+    loading,
+    refetch: fetchMessages,
+  }
 }
