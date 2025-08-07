@@ -1,14 +1,22 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { Send, RefreshCcw } from 'lucide-react'
-import { Message } from '@/app/dashboard/bot/types/types'
-import { useChatMessages } from '@/hooks/useChatMessages'
+import { useEffect, useRef } from 'react'
+import { RefreshCcw, Send } from 'lucide-react'
+import { useBotChat } from '@/hooks/useBotChat'
+import { MessageBubble } from './MessageBubble'
+
 
 export default function ChatBot({ botId }: { botId: string }) {
-  const { messages, setMessages, loading, refetch } = useChatMessages(botId)
-  const [input, setInput] = useState('')
-  const [isSending, setIsSending] = useState(false)
+  const {
+    messages,
+    input,
+    setInput,
+    isSending,
+    isThinking,
+    loading,
+    handleSend,
+    refetch,
+  } = useBotChat(botId)
 
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -16,42 +24,13 @@ export default function ChatBot({ botId }: { botId: string }) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const handleSend = async () => {
-      if (!input.trim()) return
-      setIsSending(true)
-
-      const userText = input.trim()
-      setInput('')
-
-      const userMessage: Message = {
-        id: Date.now(), // temporal
-        sender: 'user',
-        text: userText,
-      }
-
-      setMessages(prev => [...prev, userMessage])
-      console.log('📤 Mensaje enviado (simulado):', { botId, message: userText })
-
-      setTimeout(() => {
-        const botReply: Message = {
-          id: Date.now() + 1,
-          sender: 'bot',
-          text: 'Simulación de respuesta de Lukran 💡',
-        }
-        setMessages(prev => [...prev, botReply])
-        setIsSending(false)
-      }, 1000)
-    }
-
-
   return (
     <div className="flex flex-col w-full h-full">
-      {/* Botón de refresco */}
+      {/* Refrescar */}
       <div className="flex justify-end p-2">
         <button
           onClick={refetch}
           className="text-sm text-orange-500 flex items-center gap-1 hover:underline"
-          title="Volver a cargar mensajes"
         >
           <RefreshCcw size={14} />
           Refrescar
@@ -64,26 +43,14 @@ export default function ChatBot({ botId }: { botId: string }) {
           <p className="text-sm text-gray-600">Cargando historial...</p>
         ) : (
           <>
-            {[...messages]
-              .sort((a, b) => a.id - b.id)
-              .map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[75%] px-4 py-2 rounded-2xl shadow-sm ${
-                      msg.sender === 'user'
-                        ? 'bg-orange-500 text-white'
-                        : 'bg-white text-gray-800 border'
-                    }`}
-                  >
-                    {msg.text}
-                  </div>
-                </div>
+            {messages.sort((a, b) => a.id - b.id).map((msg) => (
+              <MessageBubble key={msg.id} text={msg.text} sender={msg.sender} />
             ))}
             <div ref={bottomRef} />
           </>
+        )}
+        {isThinking && (
+          <MessageBubble text={'Mailo está escribiendo...'} sender="bot" />
         )}
       </div>
 
@@ -94,16 +61,23 @@ export default function ChatBot({ botId }: { botId: string }) {
           className="flex-1 px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400"
           placeholder="Escribe tu mensaje..."
           value={input}
-          onChange={e => setInput(e.target.value)}
+          onChange={(e) => setInput(e.target.value)}
           disabled={isSending}
-          onKeyDown={e => e.key === 'Enter' && handleSend()}
+          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
         />
         <button
           onClick={handleSend}
           disabled={isSending}
           className="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 transition disabled:opacity-50"
         >
-          <Send size={18} />
+          {isSending ? (
+            <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+            </svg>
+          ) : (
+            <Send size={18} />
+          )}
         </button>
       </div>
     </div>
