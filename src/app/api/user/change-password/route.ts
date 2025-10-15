@@ -13,7 +13,6 @@ export type JWTPayloadCustom = {
 
 export async function POST(request: Request) {
   try {
-
     const cookieStore = await cookies()
     const token = cookieStore.get('token')?.value
 
@@ -22,7 +21,7 @@ export async function POST(request: Request) {
     }
 
     const secret = new TextEncoder().encode(process.env.JWT_SECRET!)
-    const { payload } = await jwtVerify(token, secret) as { payload: JWTPayloadCustom }
+    const { payload } = (await jwtVerify(token, secret)) as { payload: JWTPayloadCustom }
 
     const body = await request.json()
     const { password } = body
@@ -33,19 +32,21 @@ export async function POST(request: Request) {
 
     const hashed = await bcrypt.hash(password, 10)
 
-    await prisma.user.update({
+    // 🟢 Actualizar usuario en la tabla UserAdmin
+    await prisma.userAdmin.update({
       where: { id: payload.id },
       data: {
         password: hashed,
-        changePassword: false
-      }
+        changePassword: false,
+      },
     })
 
+    // 🟢 Generar nuevo token JWT con `changePassword: false`
     const newToken = await new SignJWT({
       id: payload.id,
       user_name: payload.user_name,
       role: payload.role,
-      changePassword: false
+      changePassword: false,
     })
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('7d')
@@ -60,12 +61,12 @@ export async function POST(request: Request) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7 // 7 días
+      maxAge: 60 * 60 * 24 * 7, // 7 días
     })
 
     return response
   } catch (error) {
     console.error('❌ Error en change-password:', error)
-    return NextResponse.json({ error: 'Error interno' }, { status: 500 })
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

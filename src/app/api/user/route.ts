@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { user_name, password, role } = body
 
-    // Validación básica
+    // 🟢 Validación básica
     if (!user_name || !password || !role) {
       return NextResponse.json(
         { error: 'Campos obligatorios faltantes: user_name, password y role' },
@@ -15,8 +15,8 @@ export async function POST(request: Request) {
       )
     }
 
-    // Validar si ya existe un usuario con ese user_name
-    const existingUser = await prisma.user.findUnique({
+    // 🟢 Validar si ya existe un usuario con ese user_name
+    const existingUser = await prisma.userAdmin.findUnique({
       where: { user_name },
     })
 
@@ -27,8 +27,8 @@ export async function POST(request: Request) {
       )
     }
 
-    // Buscar el rol
-    const foundRole = await prisma.role.findUnique({
+    // 🟢 Buscar el rol
+    const foundRole = await prisma.roleAdmin.findUnique({
       where: { name: role },
     })
 
@@ -39,11 +39,11 @@ export async function POST(request: Request) {
       )
     }
 
-    // Hashear la contraseña
+    // 🟢 Hashear la contraseña
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Crear el usuario
-    const newUser = await prisma.user.create({
+    // 🟢 Crear el usuario en la tabla UserAdmin
+    const newUser = await prisma.userAdmin.create({
       data: {
         user_name,
         password: hashedPassword,
@@ -56,8 +56,8 @@ export async function POST(request: Request) {
         role: {
           select: {
             id: true,
-            name: true
-          }
+            name: true,
+          },
         },
         changePassword: true,
         createdAt: true,

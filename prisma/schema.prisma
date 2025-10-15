@@ -3,18 +3,210 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
 }
 
-model Role {
-  id    String @id @default(cuid())
-  name  String @unique
-  users User[]
+//
+// -------- ENUMS --------
+//
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+  RESCHEDULED
+}
+
+enum BusinessStatus {
+  ACTIVE
+  PENDING
+  INACTIVE
+  BLOCKED
+  SUSPENDED
+}
+
+enum Sender {
+  USER
+  AI
+}
+
+enum SalesChatStatus {
+  ACTIVE              // Cliente aún no ha mostrado interés concreto
+  INTERESTED          // Cliente con interés (marca, modelo, precio)
+  CLEAR_INTEREST      // Producto único identificado, IA responde con detalles
+  QUALIFYING          // IA está validando intención de contacto o financiación
+  QUALIFIED           // Cliente calificado, listo para gestión humana
+  WAITING_DOCS        // A la espera de documentos
+  WAITING_INFO        // A la espera de info adicional (ej: ciudad, nombre, etc.)
+  ESCALATED           // Escalado a equipo humano (problema, queja, caso complejo)
+  PAUSED_BY_INACTIVITY // Cliente dejó de responder; conversación congelada
+  SHEDULER            // Agendado para seguimiento posterior
+  CLOSED              // Conversación cerrada sin lead
+  LEAD                // Conversación cerrada y se obtuvo un lead exitoso
+  CLOSED_LEAD          // Conversación cerrada lead que vuelve a empezar
+  LOST                // Conversación terminada, cliente no interesado o rechazó
+}
+
+//
+// -------- LEADS --------
+//
+
+model RoleLeads {
+  id        Int             @id @default(autoincrement())
+  name      String          @unique
+  users     BusinessUser[]  @relation("RoleUsers")
+  createdAt DateTime        @default(now())
+}
+
+model BusinessUser {
+  id              Int           @id @default(autoincrement())
+  username        String        @unique
+  password        String
+  changePassword  Boolean       @default(false) // Nuevo campo
+  role            RoleLeads     @relation("RoleUsers", fields: [roleId], references: [id])
+  roleId          Int
+  token           String?
+  profile         BusinessUserProfile?
+  businessLeads   BusinessLead[] @relation("UserBusinessLeads")
+  createdAt       DateTime      @default(now())
+}
+
+model BusinessUserProfile {
+  id         Int           @id @default(autoincrement())
+  name       String
+  phone      String
+  photoUrl   String?
+  user       BusinessUser  @relation(fields: [userId], references: [id])
+  userId     Int           @unique
+  createdAt  DateTime      @default(now())
+}
+
+model BusinessLead {
+  id        Int             @id @default(autoincrement())
+  name      String
+  token     String          @unique
+  leads     Lead[]
+  users     BusinessUser[]  @relation("UserBusinessLeads")
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+model Lead {
+  id                     Int             @id @default(autoincrement())
+  name                   String?
+  fullName               String?
+  email                  String?
+  phone                  String
+  phoneContact           String?
+  documentNumber         String?
+  searchTerm             String?
+  leadType               String?
+  requiresFinancing      Boolean         @default(false)
+  willingToQualify       Boolean         @default(false)
+  hasTradeInVehicle      Boolean         @default(false)
+  calledClient           Boolean         @default(false)
+  salesChatId            String          @unique
+  productInterestSummary String?
+  productPrice           String?
+  tradeInVehicle         TradeInVehicle? @relation(fields: [tradeInVehicleId], references: [id])
+  tradeInVehicleId       Int?            @unique
+  business               BusinessLead    @relation(fields: [businessId], references: [id])
+  businessId             Int
+  appointments           Appointment?
+  createdAt              DateTime        @default(now())
+}
+
+model TradeInVehicle {
+  id        Int       @id @default(autoincrement())
+  name      String?   // Ahora opcional
+  brand     String?   // Ahora opcional
+  model     String?   // Ahora opcional
+  chassis   String?   // Ahora opcional
+  year      String?   // Ya era opcional
+  photos    String[]
+  lead      Lead?     @relation
+  createdAt DateTime  @default(now())
+}
+
+model Appointment {
+  id        Int                @id @default(autoincrement())
+  lead      Lead               @relation(fields: [leadId], references: [id])
+  leadId    Int                @unique
+  date      DateTime
+  notes     String?
+  status    AppointmentStatus  @default(SCHEDULED)
+  createdAt DateTime           @default(now())
+}
+
+//
+// -------- CHATS --------
+//
+
+model BusinessChat {
+  id        Int           @id @default(autoincrement())
+  token     String        @unique
+  status    BusinessStatus @default(INACTIVE)
+  users     User[]
+  chats     SalesChat[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }
 
 model User {
+  id         Int           @id @default(autoincrement())
+  phone      String        @unique
+  name       String?
+  email      String?
+  businessId Int
+  business   BusinessChat  @relation(fields: [businessId], references: [id])
+  messages   Message[]
+  salesChats SalesChat[]
+}
+
+model Message {
+  id          Int        @id @default(autoincrement())
+  content     String
+  createdAt   DateTime   @default(now())
+  userId      Int
+  user        User       @relation(fields: [userId], references: [id])
+  salesChatId Int?
+  salesChat   SalesChat? @relation(fields: [salesChatId], references: [id])
+  sender      Sender     @default(USER)
+}
+
+model SalesChat {
+  id                 Int              @id @default(autoincrement())
+  userId             Int
+  user               User             @relation(fields: [userId], references: [id])
+  businessId         Int
+  business           BusinessChat     @relation(fields: [businessId], references: [id])
+  status             SalesChatStatus  @default(ACTIVE)
+  lastStatus         SalesChatStatus?
+  summary            String?
+  interestedProduct  String?
+  aiResponseSummary  String?
+  lastInteractionAt  DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  messages           Message[]
+  loopEdit           Int              @default(0)
+}
+
+//
+// -------- ADMIN --------
+//
+
+model RoleAdmin {
+  id    String @id @default(cuid())
+  name  String @unique
+  users UserAdmin[]
+}
+
+model UserAdmin {
   id             String   @id @default(cuid())
   user_name      String   @unique
   email          String?  @unique
@@ -22,17 +214,9 @@ model User {
   password       String
   changePassword Boolean  @default(true)
   roleId         String
-  role           Role     @relation(fields: [roleId], references: [id])
+  role           RoleAdmin @relation(fields: [roleId], references: [id])
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-}
-
-enum BusinessStatus {
-  ACTIVE // Cliente con servicio funcionando
-  PENDING // En prueba, demo o esperando activación
-  INACTIVE // Ya no se usa, pero no ha sido eliminado
-  BLOCKED // Suspendido manualmente por problemas
-  SUSPENDED // Suspendido por impago u otro automático
 }
 
 enum ApiIntegrationStatus {
@@ -47,7 +231,7 @@ enum WSEnvironment {
   PROD
 }
 
-model Business {
+model BusinessAdmin {
   id              String                   @id @default(cuid())
   name            String
   slug            String                   @unique
@@ -57,18 +241,18 @@ model Business {
   webhookURL      String?
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
-  whatsappConfigs BusinessWhatsappConfig[] // ← relación uno-a-muchos
+  whatsappConfigs BusinessWhatsappConfig[]
   apiIntegrations BusinessApiIntegration[]
   bots            BusinessBot[]
-  verticalId   String?
-  vertical     Vertical? @relation(fields: [verticalId], references: [id])
+  verticalId      String?
+  vertical        Vertical? @relation(fields: [verticalId], references: [id])
   activeVariables BusinessActiveVariable[]
 }
 
 model BusinessApiIntegration {
   id           String                @id @default(cuid())
   businessId   String
-  business     Business              @relation(fields: [businessId], references: [id])
+  business     BusinessAdmin         @relation(fields: [businessId], references: [id])
   apiId        String
   api          ApiIntegrationCatalog @relation(fields: [apiId], references: [id], name: "ApiCatalogRelation")
   externalId   String
@@ -79,7 +263,6 @@ model BusinessApiIntegration {
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
 
-  // Relaciones adicionales
   subApis BusinessSubApi[] @relation("SubApisFromChat")
 
   @@unique([businessId, apiId])
@@ -87,16 +270,16 @@ model BusinessApiIntegration {
 
 model BusinessSubApi {
   id         String                 @id @default(cuid())
-  apiChatId  String // La API principal, de tipo chat
+  apiChatId  String
   apiChat    BusinessApiIntegration @relation("SubApisFromChat", fields: [apiChatId], references: [id])
-  apiId      String // El catálogo de la sub API (Leads, Appointments, etc.)
+  apiId      String
   api        ApiIntegrationCatalog  @relation(fields: [apiId], references: [id])
-  externalId String // ID con el que quedó registrado en el monolito externo
+  externalId String
   status     ApiIntegrationStatus   @default(INACTIVE)
   createdAt  DateTime               @default(now())
   updatedAt  DateTime               @updatedAt
 
-  @@unique([apiChatId, apiId]) // Evita duplicados para una subapi en una apiChat
+  @@unique([apiChatId, apiId])
 }
 
 model ApiIntegrationCatalog {
@@ -122,7 +305,7 @@ model BusinessWhatsappConfig {
   id                    String        @id @default(cuid())
   name                  String
   businessId            String
-  business              Business      @relation(fields: [businessId], references: [id])
+  business              BusinessAdmin @relation(fields: [businessId], references: [id])
   wabaId                String
   phoneNumberId         String
   senderPhoneNumber     String
@@ -143,14 +326,14 @@ enum VariableType {
 }
 
 model Vertical {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  label     String
-  variables VerticalVariable[]
-  businesses Business[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  name       String
+  slug       String   @unique
+  label      String
+  variables  VerticalVariable[]
+  businesses BusinessAdmin[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model VerticalVariable {
@@ -158,9 +341,9 @@ model VerticalVariable {
   verticalId String
   vertical   Vertical     @relation(fields: [verticalId], references: [id])
 
-  name       String       // Interno
-  slug       String       // Clave corta para usar en queries/chat
-  label      String       // Texto que se le muestra al cliente
+  name       String
+  slug       String
+  label      String
 
   type       VariableType
   required   Boolean      @default(false)
@@ -170,67 +353,64 @@ model VerticalVariable {
 
   businessActiveVariables BusinessActiveVariable[]
 
-  @@unique([verticalId, slug]) // Evita duplicados dentro de una vertical
+  @@unique([verticalId, slug])
 }
 
 model BusinessActiveVariable {
   id                 String           @id @default(cuid())
   businessId         String
-  business           Business         @relation(fields: [businessId], references: [id])
+  business           BusinessAdmin    @relation(fields: [businessId], references: [id])
   verticalVariableId String
   verticalVariable   VerticalVariable @relation(fields: [verticalVariableId], references: [id])
-  apiFieldName       String           // Nombre como viene en la API del cliente (opcional)
-  isFilterable       Boolean          @default(true) // Útil si lo usarás para filtros en frontend o agentes
+  apiFieldName       String
+  isFilterable       Boolean          @default(true)
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
 
-  @@unique([businessId, verticalVariableId]) // Evita duplicadas
+  @@unique([businessId, verticalVariableId])
 }
 
 model BusinessBot {
-  id               String                 @id @default(cuid())
-  name             String
-  description      String?
-  simulatedPhone   String?
-  webhookURL       String
-  webhookTestURL   String?
+  id                   String                 @id @default(cuid())
+  name                 String
+  description          String?
+  simulatedPhone       String?
+  webhookURL           String
+  webhookTestURL       String?
   whatsappWebhookToken String?
   whatsappWebhookPath  String?
 
-  businessId       String
-  business         Business               @relation(fields: [businessId], references: [id])
-  whatsappConfigId String
-  whatsappConfig   BusinessWhatsappConfig @relation(fields: [whatsappConfigId], references: [id])
-  apiIntegrations  BusinessApiIntegration[]
+  businessId           String
+  business             BusinessAdmin          @relation(fields: [businessId], references: [id])
+  whatsappConfigId     String
+  whatsappConfig       BusinessWhatsappConfig @relation(fields: [whatsappConfigId], references: [id])
+  apiIntegrations      BusinessApiIntegration[]
 
-  // Relación con eventos activos
-  activeEventTypes BusinessBotEventType[]
+  activeEventTypes     BusinessBotEventType[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model WebhookEventType {
-  id              String   @id @default(cuid())
-  type            String   // 'image', 'audio', etc.
-  label           String   // Título que se muestra al usuario final (ej. "Enviar imágenes")
-  webhookURL      String?  // URL del N8N si el bot está en TEST o PROD
-  webhookTestURL  String?  // URL del N8N si el bot está en DEV
-  active          Boolean  @default(false) // Solo si lo vamos a usar, por defecto inactivo
-  createdAt       DateTime @default(now())
+  id             String   @id @default(cuid())
+  type           String
+  label          String
+  webhookURL     String?
+  webhookTestURL String?
+  active         Boolean  @default(false)
+  createdAt      DateTime @default(now())
 
-  bots            BusinessBotEventType[]
+  bots           BusinessBotEventType[]
 }
 
 model BusinessBotEventType {
-  id        String         @id @default(cuid())
-  bot       BusinessBot    @relation(fields: [botId], references: [id])
-  botId     String
-
-  eventType WebhookEventType @relation(fields: [eventTypeId], references: [id])
+  id          String           @id @default(cuid())
+  bot         BusinessBot      @relation(fields: [botId], references: [id])
+  botId       String
+  eventType   WebhookEventType @relation(fields: [eventTypeId], references: [id])
   eventTypeId String
-
-  createdAt DateTime @default(now())
+  createdAt   DateTime         @default(now())
 
   @@unique([botId, eventTypeId])
 }

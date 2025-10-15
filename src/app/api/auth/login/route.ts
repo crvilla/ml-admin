@@ -13,9 +13,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Credenciales incompletas' }, { status: 400 })
     }
 
-    const user = await prisma.user.findUnique({
+    // 🟢 Buscar usuario en la nueva tabla UserAdmin
+    const user = await prisma.userAdmin.findUnique({
       where: { user_name },
-      include: { role: true }
+      include: { role: true }, // relación con RoleAdmin
     })
 
     if (!user) {
@@ -23,32 +24,31 @@ export async function POST(request: Request) {
     }
 
     const isMatch = await bcrypt.compare(password, user.password)
-
     if (!isMatch) {
       return NextResponse.json({ error: 'Contraseña incorrecta' }, { status: 401 })
     }
 
-    // Crear token
+    // 🟢 Crear token con los datos de UserAdmin
     const token = jwt.sign(
       {
         id: user.id,
         user_name: user.user_name,
         role: user.role.name,
-        changePassword: user.changePassword
+        changePassword: user.changePassword,
       },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' }
     )
 
-    // Crear respuesta y asignar cookie
+    // 🟢 Crear respuesta y cookie
     const response = NextResponse.json({
       message: 'Login exitoso',
       user: {
         id: user.id,
         user_name: user.user_name,
         role: user.role.name,
-        changePassword: user.changePassword
-      }
+        changePassword: user.changePassword,
+      },
     })
 
     response.cookies.set({
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7 // 7 días
+      maxAge: 60 * 60 * 24 * 7, // 7 días
     })
 
     return response

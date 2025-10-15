@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "copy-schema": "mkdir -p prisma && cp ../mailo-prisma-schema/prisma/schema.prisma prisma/schema.prisma",
+    "generate": "npm run copy-schema && prisma generate --schema=prisma/schema.prisma",
+    "migrate": "npm run copy-schema && prisma migrate dev --schema=prisma/schema.prisma"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
@@ -38,6 +41,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
+    "mailo-prisma-schema": "file:../mailo-prisma-schema",
     "tailwindcss": "^4.1.11",
     "ts-node": "^10.9.2",
     "typescript": "^5"

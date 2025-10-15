@@ -6,16 +6,17 @@ async function main() {
   const roles = ['admin', 'comercial']
 
   for (const roleName of roles) {
-    const exists = await prisma.role.findUnique({
+    const exists = await prisma.roleAdmin.findUnique({
       where: { name: roleName },
     })
 
     if (exists) {
       console.log(`⚠️ Rol "${roleName}" ya existe con id ${exists.id}`)
     } else {
-      const newRole = await prisma.role.create({
+      const newRole = await prisma.roleAdmin.create({
         data: { name: roleName },
       })
+
       console.log(`✅ Rol "${roleName}" creado con id ${newRole.id}`)
     }
   }
