@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No se encontró businessId en la URL' }, { status: 400 })
   }
 
-  const business = await prisma.business.findUnique({
+  const business = await prisma.businessAdmin.findUnique({
     where: { id: businessId },
     select: { apiKeyPrivate: true, slug: true },
   })

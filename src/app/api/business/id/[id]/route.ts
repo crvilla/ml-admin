@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const business = await prisma.business.findMany({
+    const business = await prisma.businessAdmin.findMany({
       where: { id: businessId },
       select: { id: true, name: true },
     })

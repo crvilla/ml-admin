@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const business = await prisma.business.findUnique({
+    const business = await prisma.businessAdmin.findUnique({
       where: { slug },
       select: {
         id: true,
@@ -69,7 +69,7 @@ export async function PATCH(req: NextRequest) {
       return new NextResponse('No hay campos válidos para actualizar', { status: 400 })
     }
 
-    const updated = await prisma.business.update({
+    const updated = await prisma.businessAdmin.update({
       where: { slug },
       data,
     })
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ valid: true })
     }
 
-    const business = await prisma.business.findUnique({
+    const business = await prisma.businessAdmin.findUnique({
       where: { slug },
       select: { apiKeyPrivate: true },
     })

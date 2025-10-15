@@ -5,7 +5,7 @@ import crypto from 'crypto'
 
 export async function GET() {
   try {
-    const businesses = await prisma.business.findMany({
+    const businesses = await prisma.businessAdmin.findMany({
       orderBy: { createdAt: 'desc' },
     })
 
@@ -26,7 +26,7 @@ async function generateUniqueSlug(name: string): Promise<string> {
   let slug = baseSlug
   let counter = 1
 
-  while (await prisma.business.findUnique({ where: { slug } })) {
+  while (await prisma.businessAdmin.findUnique({ where: { slug } })) {
     slug = `${baseSlug}-${counter}`
     counter++
   }
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     const slug = await generateUniqueSlug(name)
     const apiKeyPrivate = crypto.randomBytes(32).toString('hex')
 
-    const business = await prisma.business.create({
+    const business = await prisma.businessAdmin.create({
       data: {
         name,
         slug,
